@@ -5,17 +5,34 @@ import assert from 'node:assert/strict';
 
 const env = { YT_KEY: 'test-key', ALLOWED_ORIGINS: 'https://brwnll.github.io,http://localhost:8765' };
 const calls = [];
+// Search-result videos that test the English-only filter.
+const SNIPPETS = {
+  aaaaaaaaaaa: { title: '🛠️Building Numberblocks 1 to 10 🔢 | Learn & Play', channelTitle: 'Numberblocks', defaultAudioLanguage: 'en-GB' },
+  fffffffffff: { title: 'Los Terribles Dos', channelTitle: 'Numberblocks Español - Canal Oficial' },
+  ggggggggggg: { title: 'Counting fun', channelTitle: 'Kids Ch', defaultAudioLanguage: 'es-419' },
+  hhhhhhhhhhh: { title: 'ナンバーブロックス', channelTitle: 'Kids JP' },
+  iiiiiiiiiii: { title: 'Café counting song', channelTitle: 'Kids Ch' },
+};
 const vid = (id, secs, opts = {}) => ({
-  id, snippet: { title: 'Video ' + id, channelTitle: 'Kids Ch' },
+  id, snippet: SNIPPETS[id] || { title: 'Video ' + id, channelTitle: 'Kids Ch' },
   contentDetails: { duration: `PT${Math.floor(secs / 60)}M${secs % 60}S` },
   status: { embeddable: opts.embeddable ?? true, privacyStatus: opts.privacy ?? 'public', madeForKids: opts.kids ?? true },
 });
+const CHANNELS = [
+  ['UC' + 'a'.repeat(22), 'Numberblocks', 'en'],
+  ['UC' + 'b'.repeat(22), 'Numberblocks Español - Canal Oficial'],
+  ['UC' + 'c'.repeat(22), '넘버블록스 - 한국 - 공식 채널'],
+  ['UC' + 'd'.repeat(22), 'Blocks Universe', 'fr'],
+  ['UC' + 'e'.repeat(22), 'Everything Numberblocks Omniverse'],
+];
 const FAKE = {
   search: p => p.get('type') === 'channel'
-    ? { items: [{ id: { channelId: 'UC' + 'a'.repeat(22) }, snippet: { title: 'Numberblocks', channelTitle: 'Numberblocks', description: 'Counting', thumbnails: { default: { url: 'https://x/t.jpg' } } } }] }
-    : { items: [{ id: { videoId: 'aaaaaaaaaaa' } }, { id: { videoId: 'bbbbbbbbbbb' } }] },
+    ? { items: CHANNELS.map(([id, title]) => ({ id: { channelId: id }, snippet: { title, channelTitle: title, description: 'Also in Español!', thumbnails: { default: { url: 'https://x/t.jpg' } } } })) }
+    : { items: ['aaaaaaaaaaa', 'bbbbbbbbbbb', 'fffffffffff', 'ggggggggggg', 'hhhhhhhhhhh', 'iiiiiiiiiii'].map(videoId => ({ id: { videoId } })) },
   videos: p => ({ items: p.get('id').split(',').map((id, i) => vid(id, 30 + i * 200, { embeddable: id !== 'bbbbbbbbbbb' })) }),
-  channels: () => ({ items: [{ id: 'UC' + 'a'.repeat(22), snippet: { title: 'Numberblocks', thumbnails: {} }, contentDetails: { relatedPlaylists: { uploads: 'UUx' } } }] }),
+  channels: p => p.get('part') === 'snippet'
+    ? { items: CHANNELS.map(([id, title, defaultLanguage]) => ({ id, snippet: { title, defaultLanguage } })) }
+    : { items: [{ id: 'UC' + 'a'.repeat(22), snippet: { title: 'Numberblocks', thumbnails: {} }, contentDetails: { relatedPlaylists: { uploads: 'UUx' } } }] },
   playlistItems: () => ({ items: ['ccccccccccc', 'ddddddddddd'].map(videoId => ({ contentDetails: { videoId } })) }),
 };
 globalThis.fetch = async url => {
@@ -30,11 +47,11 @@ const get = async (path, origin = 'https://brwnll.github.io', e = env) => {
   return { status: r.status, cors: r.headers.get('Access-Control-Allow-Origin'), body: await r.json() };
 };
 
-// Video search: strict safe search, unembeddable video removed, key sent to YouTube only.
+// Video search: strict safe search, unembeddable and non-English videos removed, key sent to YouTube only.
 let r = await get('/search?q=counting&type=video');
 assert.equal(r.status, 200);
 assert.equal(r.cors, 'https://brwnll.github.io');
-assert.deepEqual(r.body.items.map(v => v.id), ['aaaaaaaaaaa']);
+assert.deepEqual(r.body.items.map(v => v.id), ['aaaaaaaaaaa', 'iiiiiiiiiii']);
 assert.equal(calls[0].searchParams.get('safeSearch'), 'strict');
 assert.equal(calls[0].searchParams.get('relevanceLanguage'), 'en');
 assert.equal(calls[0].searchParams.get('key'), 'test-key');
@@ -47,11 +64,11 @@ assert.equal(calls.length, before, 'repeat search should be cached');
 
 // Channel search and channel videos (Shorts under 60s dropped).
 r = await get('/search?q=numberblocks&type=channel');
-assert.equal(r.body.items[0].title, 'Numberblocks');
+assert.deepEqual(r.body.items.map(c => c.title), ['Numberblocks', 'Everything Numberblocks Omniverse']);
 r = await get('/channel?handle=@numberblocks');
 assert.equal(r.status, 200);
 assert.deepEqual(r.body.videos.map(v => v.id), ['ddddddddddd']);
-assert.equal(calls.find(c => c.pathname.endsWith('channels')).searchParams.get('forHandle'), '@numberblocks');
+assert.ok(calls.some(c => c.pathname.endsWith('channels') && c.searchParams.get('forHandle') === '@numberblocks'));
 
 // Videos by id
 r = await get('/videos?ids=eeeeeeeeeee,bad!');

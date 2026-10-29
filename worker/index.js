@@ -51,22 +51,42 @@ async function videoDetails(env, ids) {
     .map(x => ({
       id: x.id, title: x.snippet.title, channel: x.snippet.channelTitle,
       secs: isoSecs(x.contentDetails.duration), kids: !!x.status.madeForKids,
+      lang: x.snippet.defaultAudioLanguage || x.snippet.defaultLanguage || '',
     }));
+}
+
+// Search only shows English results. A result is dropped when YouTube lists another
+// language, when its text uses a non-Latin alphabet, or when it names another language.
+const OTHER_LANGUAGE_WORDS = /(^|[^\p{L}])(español|espanol|castellano|latino|français|francais|deutsch|português|portugues|brasil|italiano|nederlands|polski|türkçe|turkce|русский|hindi|bahasa|tiếng việt|arabic|العربية)([^\p{L}]|$)/iu;
+const NON_LATIN_LETTER = /(?=\p{L})\P{Script=Latin}/u;
+function looksEnglish(lang, ...texts) {
+  if (lang && !/^en\b/i.test(lang)) return false;
+  return texts.every(t => !t || (!NON_LATIN_LETTER.test(t) && !OTHER_LANGUAGE_WORDS.test(t)));
 }
 
 async function search(env, q, type) {
   if (!q || q.length > 100) throw new HttpError(400, 'Search must be 1–100 characters.');
   if (type !== 'video' && type !== 'channel') throw new HttpError(400, 'type must be video or channel');
-  const params = { part: 'snippet', q, type, maxResults: 24, safeSearch: 'strict', relevanceLanguage: 'en', regionCode: 'US' };
+  const params = { part: 'snippet', q, type, maxResults: 30, safeSearch: 'strict', relevanceLanguage: 'en', regionCode: 'US' };
   if (type === 'video') params.videoEmbeddable = 'true';
   const j = await yt(env, 'search', params);
   if (type === 'channel') {
-    return j.items.map(x => ({
-      id: x.id.channelId, title: x.snippet.channelTitle || x.snippet.title,
-      thumb: x.snippet.thumbnails?.default?.url || '', description: x.snippet.description,
-    }));
+    const ids = j.items.map(x => x.id.channelId).filter(Boolean);
+    // Search results don't include a channel's language, so look it up (1 quota unit).
+    const langs = new Map();
+    if (ids.length) {
+      const c = await yt(env, 'channels', { part: 'snippet', id: ids.join(',') });
+      for (const ch of c.items || []) langs.set(ch.id, ch.snippet.defaultLanguage || '');
+    }
+    return j.items
+      .map(x => ({
+        id: x.id.channelId, title: x.snippet.channelTitle || x.snippet.title,
+        thumb: x.snippet.thumbnails?.default?.url || '', description: x.snippet.description,
+      }))
+      .filter(c => c.id && looksEnglish(langs.get(c.id), c.title));
   }
-  return videoDetails(env, j.items.map(x => x.id.videoId).filter(Boolean));
+  const videos = await videoDetails(env, j.items.map(x => x.id.videoId).filter(Boolean));
+  return videos.filter(v => looksEnglish(v.lang, v.title, v.channel));
 }
 
 async function channel(env, query) {
