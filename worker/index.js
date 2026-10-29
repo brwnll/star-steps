@@ -57,7 +57,7 @@ async function videoDetails(env, ids) {
 async function search(env, q, type) {
   if (!q || q.length > 100) throw new HttpError(400, 'Search must be 1–100 characters.');
   if (type !== 'video' && type !== 'channel') throw new HttpError(400, 'type must be video or channel');
-  const params = { part: 'snippet', q, type, maxResults: 24, safeSearch: 'strict' };
+  const params = { part: 'snippet', q, type, maxResults: 24, safeSearch: 'strict', relevanceLanguage: 'en', regionCode: 'US' };
   if (type === 'video') params.videoEmbeddable = 'true';
   const j = await yt(env, 'search', params);
   if (type === 'channel') {

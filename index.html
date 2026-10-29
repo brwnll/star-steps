@@ -715,7 +715,7 @@ async function videoDetails(ids) {
 }
 async function searchYouTube(q, type) {
   if (!S.apiKey) return (await server('/search', { q, type })).items;
-  const params = { part: 'snippet', q, type, maxResults: 24, safeSearch: 'strict' };
+  const params = { part: 'snippet', q, type, maxResults: 24, safeSearch: 'strict', relevanceLanguage: 'en', regionCode: 'US' };
   if (type === 'video') params.videoEmbeddable = 'true';
   const j = await yt('search', params);
   if (type === 'channel') return j.items.map(x => ({ id: x.id.channelId, title: x.snippet.channelTitle || x.snippet.title,

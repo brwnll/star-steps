@@ -36,6 +36,7 @@ assert.equal(r.status, 200);
 assert.equal(r.cors, 'https://brwnll.github.io');
 assert.deepEqual(r.body.items.map(v => v.id), ['aaaaaaaaaaa']);
 assert.equal(calls[0].searchParams.get('safeSearch'), 'strict');
+assert.equal(calls[0].searchParams.get('relevanceLanguage'), 'en');
 assert.equal(calls[0].searchParams.get('key'), 'test-key');
 assert.ok(!JSON.stringify(r.body).includes('test-key'), 'key must never reach the browser');
 
