@@ -159,6 +159,26 @@
   .plist .grow { flex: 1; min-width: 0; }
   .plist .grow small { display: block; color: #888; }
   .plist .x { background: #ffe1e1; color: #c22; border-radius: 10px; padding: 8px 12px; font-size: 16px; font-weight: 600; }
+  .searchrow { display: flex; gap: 10px; }
+  .searchrow .pbtn { margin-top: 0; }
+  .seg { display: inline-flex; background: #eee; border-radius: 14px; padding: 4px; margin-top: 12px; }
+  .seg button { font-size: 17px; font-weight: 600; padding: 8px 16px; border-radius: 10px; background: none; }
+  .seg button.on { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+  .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; margin-top: 12px; }
+  .rcard { border: 2px solid #eee; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .rcard a { position: relative; display: block; }
+  .rcard a img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #ddd; }
+  .rcard a b { position: absolute; right: 6px; bottom: 6px; background: rgba(0,0,0,.75); color: #fff; font-size: 13px; padding: 2px 6px; border-radius: 6px; }
+  .rcard .rbody { padding: 8px 10px 10px; flex: 1; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
+  .rcard .rtitle { font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .rcard small { color: #777; }
+  .rcard .chhead { display: flex; gap: 10px; align-items: center; padding: 12px 10px 0; }
+  .rcard .chhead img { width: 56px; height: 56px; border-radius: 50%; }
+  .rcard .pbtn { margin-top: auto; padding: 10px; }
+  .rcard .pbtn.added { background: var(--green); }
+  details.more { margin-top: 12px; }
+  details.more summary { cursor: pointer; font-weight: 600; font-size: 17px; color: var(--purple); padding: 4px 0; }
+  details.panel.more summary { color: var(--ink); font-size: 20px; }
   .status { font-size: 16px; margin-top: 10px; min-height: 1em; }
   .status.err { color: #c22; }
   .gate { text-align: center; margin-top: 12vh; }
@@ -287,28 +307,54 @@
       </div>
 
       <div class="panel">
-        <h4>📺 YouTube channels</h4>
-        <p class="help">Add channels your child may watch. The game shows 4 random videos from them after each round.
-          Channels need a free YouTube API key (one-time setup):
-          go to <b>console.cloud.google.com</b> → create a project → enable <b>YouTube Data API v3</b> → Credentials → <b>Create API key</b>.
-          The key is saved only on this iPad.</p>
-        <input class="pinput" id="apiKey" type="password" placeholder="YouTube API key" autocomplete="off" autocapitalize="off">
-        <label class="field">Only videos marked “made for kids” <input type="checkbox" data-k="kidsOnly"></label>
-        <input class="pinput" id="chInput" placeholder="Channel link or @handle, e.g. @Numberblocks" autocapitalize="off" style="margin-top:12px">
-        <button class="pbtn" id="chAdd">Add channel</button>
-        <button class="pbtn ghost" id="chRefresh">Refresh videos</button>
-        <div class="status" id="chStatus"></div>
-        <ul class="plist" id="chList"></ul>
+        <h4>🔎 Find videos</h4>
+        <p class="help">Search YouTube and tap <b>Add</b> on anything your child may watch. Adding a channel adds its 50 newest videos
+          and keeps them up to date. Results use YouTube's strict SafeSearch, but tap a picture to preview anything you're unsure about.</p>
+        <form id="searchForm" class="searchrow">
+          <input class="pinput" id="searchInput" type="search" placeholder="Try “numberblocks” or “phonics songs”" autocapitalize="off" autocomplete="off" enterkeyhint="search">
+          <button class="pbtn" type="submit">Search</button>
+        </form>
+        <div class="seg" id="searchType">
+          <button type="button" data-type="video" class="on">🎬 Videos</button><button type="button" data-type="channel">📺 Channels</button>
+        </div>
+        <div class="status" id="searchStatus"></div>
+        <div class="results" id="results"></div>
       </div>
 
       <div class="panel">
-        <h4>🎬 Single videos</h4>
-        <p class="help">No API key? Paste YouTube video links here instead, one per line.</p>
-        <textarea class="pinput" id="vidInput" placeholder="https://www.youtube.com/watch?v=…" autocapitalize="off"></textarea>
-        <button class="pbtn" id="vidAdd">Add videos</button>
-        <div class="status" id="vidStatus"></div>
-        <ul class="plist" id="vidList"></ul>
+        <h4>📺 Your channels</h4>
+        <ul class="plist" id="chList"></ul>
+        <p class="help" id="chEmpty">No channels yet. Search above and switch to “Channels”.</p>
+        <label class="field">Only videos marked “made for kids” <input type="checkbox" data-k="kidsOnly"></label>
+        <button class="pbtn ghost" id="chRefresh">Refresh videos</button>
+        <details class="more">
+          <summary>Add a channel by link or @handle</summary>
+          <input class="pinput" id="chInput" placeholder="e.g. @Numberblocks" autocapitalize="off">
+          <button class="pbtn" id="chAdd">Add channel</button>
+        </details>
+        <div class="status" id="chStatus"></div>
       </div>
+
+      <div class="panel">
+        <h4>🎬 Your videos</h4>
+        <ul class="plist" id="vidList"></ul>
+        <p class="help" id="vidEmpty">No single videos yet. Search above to add some.</p>
+        <details class="more">
+          <summary>Paste video links instead</summary>
+          <p class="help">In the YouTube app tap Share → Copy Link, then paste here. One link per line.</p>
+          <textarea class="pinput" id="vidInput" placeholder="https://www.youtube.com/watch?v=…" autocapitalize="off"></textarea>
+          <button class="pbtn" id="vidAdd">Add videos</button>
+        </details>
+        <div class="status" id="vidStatus"></div>
+      </div>
+
+      <details class="panel more">
+        <summary>Advanced: use your own YouTube API key</summary>
+        <p class="help">Not needed: search works through the game's shared server. Add your own key only if search says
+          the daily limit is used up. Get one at <b>console.cloud.google.com</b> → enable <b>YouTube Data API v3</b> →
+          Credentials → <b>Create API key</b>. It's saved only on this iPad.</p>
+        <input class="pinput" id="apiKey" type="password" placeholder="YouTube API key (optional)" autocomplete="off" autocapitalize="off">
+      </details>
     </div>
   </div>
 </section>
@@ -632,7 +678,20 @@ $('#doneWatch').onclick = () => {
   stopPlayer(); show('home');
 };
 
-// ---------- YouTube Data API (parents' channels) ----------
+// ---------- YouTube lookups ----------
+// Normally goes through the shared search server (worker/), which holds the API key.
+// A parent's own key (Advanced) is used instead when set.
+const SERVER_URL = store.get('ss.server', '') || ''; // localStorage override is for local testing
+const canLookUp = () => !!(S.apiKey || SERVER_URL);
+
+async function server(path, params) {
+  const url = new URL(SERVER_URL.replace(/\/$/, '') + path);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+  const r = await fetch(url);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
 async function yt(path, params) {
   const url = new URL('https://www.googleapis.com/youtube/v3/' + path);
   for (const [k, v] of Object.entries({ ...params, key: S.apiKey })) url.searchParams.set(k, v);
@@ -645,24 +704,44 @@ function isoSecs(d) {
   const m = /P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(d || '') || [];
   return (+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0);
 }
+// Same shapes as the server returns.
+async function videoDetails(ids) {
+  if (!ids.length) return [];
+  if (!S.apiKey) return (await server('/videos', { ids: ids.join(',') })).items;
+  const j = await yt('videos', { part: 'snippet,contentDetails,status', id: ids.join(',') });
+  return j.items.filter(x => x.status.embeddable && x.status.privacyStatus === 'public').map(x => ({
+    id: x.id, title: x.snippet.title, channel: x.snippet.channelTitle,
+    secs: isoSecs(x.contentDetails.duration), kids: !!x.status.madeForKids }));
+}
+async function searchYouTube(q, type) {
+  if (!S.apiKey) return (await server('/search', { q, type })).items;
+  const params = { part: 'snippet', q, type, maxResults: 24, safeSearch: 'strict' };
+  if (type === 'video') params.videoEmbeddable = 'true';
+  const j = await yt('search', params);
+  if (type === 'channel') return j.items.map(x => ({ id: x.id.channelId, title: x.snippet.channelTitle || x.snippet.title,
+    thumb: x.snippet.thumbnails?.default?.url || '', description: x.snippet.description }));
+  return videoDetails(j.items.map(x => x.id.videoId).filter(Boolean));
+}
+// query: { id: 'UC…' } or { handle: '@name' }
+async function getChannel(query) {
+  let ch;
+  if (!S.apiKey) ch = await server('/channel', query);
+  else {
+    const c = await yt('channels', { part: 'snippet,contentDetails', ...(query.id ? { id: query.id } : { forHandle: query.handle }) });
+    const item = c.items && c.items[0];
+    if (!item) throw new Error('Channel not found');
+    const pl = await yt('playlistItems', { part: 'contentDetails', maxResults: 50, playlistId: item.contentDetails.relatedPlaylists.uploads });
+    const videos = (await videoDetails(pl.items.map(i => i.contentDetails.videoId))).filter(v => v.secs >= 60); // skip Shorts
+    ch = { id: item.id, title: item.snippet.title, thumb: item.snippet.thumbnails?.default?.url || '', videos };
+  }
+  return { ...ch, fetchedAt: Date.now() };
+}
 function parseChannel(s) {
   s = s.trim();
   let m = s.match(/(UC[\w-]{22})/); if (m) return { id: m[1] };
-  m = s.match(/@([\w.\-]+)/); if (m) return { forHandle: '@' + m[1] };
-  if (/^[\w.\-]+$/.test(s)) return { forHandle: '@' + s };
+  m = s.match(/@([\w.\-]+)/); if (m) return { handle: '@' + m[1] };
+  if (/^[\w.\-]+$/.test(s)) return { handle: '@' + s };
   return null;
-}
-async function fetchChannel(query) {
-  const c = await yt('channels', { part: 'snippet,contentDetails', ...query });
-  const ch = c.items && c.items[0];
-  if (!ch) throw new Error('Channel not found');
-  const pl = await yt('playlistItems', { part: 'contentDetails', maxResults: 50, playlistId: ch.contentDetails.relatedPlaylists.uploads });
-  const ids = pl.items.map(i => i.contentDetails.videoId);
-  const vs = ids.length ? await yt('videos', { part: 'snippet,contentDetails,status', id: ids.join(',') }) : { items: [] };
-  const videos = vs.items
-    .filter(x => x.status.embeddable && x.status.privacyStatus === 'public' && isoSecs(x.contentDetails.duration) >= 60) // skip Shorts
-    .map(x => ({ id: x.id, title: x.snippet.title, secs: isoSecs(x.contentDetails.duration), kids: !!x.status.madeForKids }));
-  return { id: ch.id, title: ch.snippet.title, thumb: ch.snippet.thumbnails?.default?.url || '', fetchedAt: Date.now(), videos };
 }
 function parseVideoId(s) {
   s = s.trim();
@@ -671,11 +750,8 @@ function parseVideoId(s) {
   return /^[\w-]{11}$/.test(s) ? s : null;
 }
 async function videoInfo(id) {
-  if (S.apiKey) {
-    try {
-      const x = (await yt('videos', { part: 'snippet', id })).items?.[0];
-      if (x) return { id, title: x.snippet.title, channel: x.snippet.channelTitle };
-    } catch {}
+  if (canLookUp()) {
+    try { const v = (await videoDetails([id]))[0]; if (v) return v; } catch {}
   }
   try {
     const r = await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id));
@@ -684,11 +760,11 @@ async function videoInfo(id) {
   return { id, title: 'YouTube video' };
 }
 async function refreshChannels(force) {
-  if (!S.apiKey) return;
+  if (!canLookUp()) return;
   for (let i = 0; i < S.channels.length; i++) {
     const ch = S.channels[i];
     if (!force && Date.now() - (ch.fetchedAt || 0) < 86400000) continue;
-    try { S.channels[i] = await fetchChannel({ id: ch.id }); } catch (e) { ch.error = e.message; }
+    try { S.channels[i] = await getChannel({ id: ch.id }); } catch (e) { ch.error = e.message; }
   }
   save();
 }
@@ -724,7 +800,77 @@ function renderParent() {
   $('#vidList').innerHTML = S.videos.map((v, i) => `<li><img src="${thumb(v.id)}" alt="">
     <div class="grow">${esc(v.title)}<small>${esc(v.channel || '')}</small></div>
     <button class="x" data-vid="${i}">Remove</button></li>`).join('');
+  $('#chEmpty').classList.toggle('hidden', S.channels.length > 0);
+  $('#vidEmpty').classList.toggle('hidden', S.videos.length > 0);
+  renderResults();
 }
+
+// Search-and-pick
+let searchType = 'video', results = [];
+const minsSecs = s => s ? fmt(s) : '';
+function renderResults() {
+  const box = $('#results');
+  if (searchType === 'video') {
+    box.innerHTML = results.map((v, i) => {
+      const added = S.videos.some(x => x.id === v.id);
+      return `<div class="rcard"><a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener" title="Preview on YouTube">
+          <img src="${thumb(v.id)}" alt="" loading="lazy"><b>${minsSecs(v.secs)}</b></a>
+        <div class="rbody"><div class="rtitle">${esc(v.title)}</div>
+          <small>${esc(v.channel || '')}${v.kids ? ' · 👶 Made for kids' : ''}</small>
+          <button class="pbtn${added ? ' added' : ''}" data-add="${i}">${added ? '✓ Added' : '+ Add video'}</button></div></div>`;
+    }).join('');
+  } else {
+    box.innerHTML = results.map((c, i) => {
+      const added = S.channels.some(x => x.id === c.id);
+      return `<div class="rcard"><div class="chhead">${c.thumb ? `<img src="${esc(c.thumb)}" alt="" loading="lazy">` : ''}
+          <div class="rtitle">${esc(c.title)}</div></div>
+        <div class="rbody"><small>${esc((c.description || '').slice(0, 110))}</small>
+          <a href="https://www.youtube.com/channel/${c.id}" target="_blank" rel="noopener" style="font-size:14px">Preview channel ↗</a>
+          <button class="pbtn${added ? ' added' : ''}" data-add="${i}">${added ? '✓ Added' : '+ Add channel'}</button></div></div>`;
+    }).join('');
+  }
+}
+async function runSearch() {
+  const q = $('#searchInput').value.trim(), st = $('#searchStatus');
+  if (!q) return;
+  if (!canLookUp()) return status(st, 'Search isn’t set up yet. You can paste video links below instead.', true);
+  $('#searchInput').blur();
+  status(st, 'Searching…'); results = []; renderResults();
+  try {
+    results = await searchYouTube(q, searchType);
+    status(st, results.length ? '' : 'Nothing found. Try different words.');
+  } catch (e) { status(st, e.message, true); }
+  renderResults();
+}
+$('#searchForm').onsubmit = e => { e.preventDefault(); runSearch(); };
+$('#searchType').onclick = e => {
+  const t = e.target.dataset.type;
+  if (!t || t === searchType) return;
+  searchType = t;
+  document.querySelectorAll('#searchType button').forEach(b => b.classList.toggle('on', b.dataset.type === t));
+  results = []; renderResults();
+  if ($('#searchInput').value.trim()) runSearch();
+};
+$('#results').onclick = async e => {
+  const i = e.target.dataset.add;
+  if (i == null) return;
+  const item = results[+i], st = $('#searchStatus'), btn = e.target;
+  if (searchType === 'video') {
+    const at = S.videos.findIndex(x => x.id === item.id);
+    if (at >= 0) S.videos.splice(at, 1); // tapping "Added" again removes it
+    else S.videos.push({ id: item.id, title: item.title, channel: item.channel });
+    save(); renderParent();
+    return;
+  }
+  const at = S.channels.findIndex(x => x.id === item.id);
+  if (at >= 0) { S.channels.splice(at, 1); save(); renderParent(); return; }
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const ch = await getChannel({ id: item.id });
+    S.channels.push(ch); save(); renderParent();
+    status(st, `Added ${ch.title} — ${ch.videos.length} videos.`);
+  } catch (err) { status(st, err.message, true); btn.disabled = false; btn.textContent = '+ Add channel'; }
+};
 document.querySelectorAll('[data-k]').forEach(el => el.onchange = () => {
   const k = el.dataset.k;
   S[k] = el.type === 'checkbox' ? el.checked : ('num' in el.dataset ? Number(el.value) : el.value);
@@ -738,12 +884,12 @@ const status = (el, msg, err) => { el.textContent = msg; el.classList.toggle('er
 $('#chAdd').onclick = async () => {
   const st = $('#chStatus'), raw = $('#chInput').value;
   if (!raw.trim()) return;
-  if (!S.apiKey) return status(st, 'Add your YouTube API key above first (or use single videos below).', true);
+  if (!canLookUp()) return status(st, 'Channel lookup isn’t set up yet. You can paste video links below instead.', true);
   const query = parseChannel(raw);
   if (!query) return status(st, "Couldn't read that channel. Try the link from the channel page, or its @handle.", true);
   status(st, 'Looking up channel…');
   try {
-    const ch = await fetchChannel(query);
+    const ch = await getChannel(query);
     if (S.channels.some(c => c.id === ch.id)) return status(st, 'That channel is already added.');
     S.channels.push(ch); save(); $('#chInput').value = ''; renderParent();
     status(st, `Added ${ch.title} — ${ch.videos.length} videos.`);
@@ -751,7 +897,7 @@ $('#chAdd').onclick = async () => {
 };
 $('#chRefresh').onclick = async () => {
   const st = $('#chStatus');
-  if (!S.apiKey) return status(st, 'Add your YouTube API key first.', true);
+  if (!canLookUp()) return status(st, 'Channel lookup isn’t set up yet.', true);
   status(st, 'Refreshing…'); await refreshChannels(true); renderParent(); status(st, 'Videos refreshed.');
 };
 $('#vidAdd').onclick = async () => {

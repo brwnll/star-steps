@@ -1,0 +1,10 @@
+name = "star-steps-api"
+main = "index.js"
+compatibility_date = "2025-09-01"
+
+[vars]
+# Sites allowed to use the server, comma separated.
+ALLOWED_ORIGINS = "https://brwnll.github.io,http://localhost:8765"
+
+# The YouTube key is a secret, never stored here. Set it with:
+#   npx wrangler secret put YT_KEY
