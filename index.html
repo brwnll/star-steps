@@ -68,6 +68,7 @@
   .topbar { width: 100%; max-width: 900px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .iconbtn { width: 68px; height: 68px; border-radius: 22px; background: #fff; font-size: 34px; }
   .stars { display: flex; gap: 6px; font-size: 52px; flex-wrap: wrap; justify-content: center; }
+  .stars.many { font-size: 34px; gap: 2px; }
   .stars span { filter: grayscale(1) opacity(.35); transition: filter .3s; }
   .stars span.on { filter: none; }
   .stars span.pop { animation: starPop .6s ease; }
@@ -263,8 +264,10 @@
         <label class="field">Phonics questions <input type="checkbox" data-k="phonics"></label>
         <label class="field">Math level
           <select data-k="mathLevel" data-num><option value="10">Numbers up to 10</option><option value="20">Numbers up to 20</option></select></label>
-        <label class="field">Questions before picking a video
-          <select data-k="goal" data-num><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></label>
+        <label class="field">Correct answers needed before a video
+          <select data-k="goal" data-num>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+            <option>7</option><option>8</option><option>10</option><option>12</option><option>15</option><option>20</option></select></label>
         <label class="field">Read questions out loud <input type="checkbox" data-k="readAloud"></label>
       </div>
 
@@ -429,6 +432,7 @@ function startQuiz(sub) {
 }
 function renderStars(pop) {
   const el = $('#stars'); el.innerHTML = '';
+  el.classList.toggle('many', S.goal > 8);
   for (let i = 0; i < S.goal; i++) {
     const s = document.createElement('span'); s.textContent = '⭐';
     if (i < correct) s.classList.add('on');
