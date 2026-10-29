@@ -681,7 +681,7 @@ $('#doneWatch').onclick = () => {
 // ---------- YouTube lookups ----------
 // Normally goes through the shared search server (worker/), which holds the API key.
 // A parent's own key (Advanced) is used instead when set.
-const SERVER_URL = store.get('ss.server', '') || ''; // localStorage override is for local testing
+const SERVER_URL = store.get('ss.server', '') || 'https://star-steps-api.brwnll.workers.dev'; // localStorage override is for local testing
 const canLookUp = () => !!(S.apiKey || SERVER_URL);
 
 async function server(path, params) {
