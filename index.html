@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Star Steps">
+<meta name="theme-color" content="#7c5cff">
+<title>Star Steps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #7c5cff; --pink: #ff5c9a; --orange: #ff9f1c; --yellow: #ffd23f;
+    --green: #2ec27e; --blue: #3aa0ff; --teal: #1fc8c8; --red: #ff5a5a;
+    --ink: #2b2250; --paper: #fffdf7;
+    --safe-t: env(safe-area-inset-top); --safe-b: env(safe-area-inset-bottom);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Fredoka', 'Chalkboard SE', 'Comic Sans MS', system-ui, sans-serif;
+    color: var(--ink); background: linear-gradient(180deg, #8fd3ff 0%, #c9ecff 55%, #e9fbd7 100%);
+    -webkit-user-select: none; user-select: none; touch-action: manipulation; overscroll-behavior: none;
+  }
+  button { font-family: inherit; color: inherit; cursor: pointer; border: 0; touch-action: manipulation; }
+
+  /* Sky decorations */
+  .sky { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+  .cloud { position: absolute; font-size: 90px; opacity: .9; animation: drift linear infinite; }
+  @keyframes drift { from { transform: translateX(-200px); } to { transform: translateX(110vw); } }
+  .hill { position: absolute; bottom: -120px; width: 70vw; height: 240px; border-radius: 50%; }
+
+  .screen { position: fixed; inset: 0; z-index: 1; display: none; flex-direction: column; align-items: center;
+    padding: calc(20px + var(--safe-t)) 24px calc(20px + var(--safe-b)); }
+  .screen.active { display: flex; animation: popIn .35s ease; }
+  #home, #reward { justify-content: center; padding-bottom: calc(80px + var(--safe-b)); }
+  @keyframes popIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+
+  /* Chunky "press-able" buttons */
+  .chunky { border-radius: 28px; box-shadow: 0 8px 0 rgba(0,0,0,.18); transition: transform .08s, box-shadow .08s; }
+  .chunky:active { transform: translateY(6px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+
+  /* Home */
+  .corner { position: absolute; top: calc(16px + var(--safe-t)); right: 20px; background: rgba(255,255,255,.7);
+    border-radius: 18px; padding: 10px 16px; font-size: 18px; font-weight: 600; color: #555; }
+  .hero { text-align: center; }
+  .mascot { font-size: 120px; display: inline-block; animation: bob 2.4s ease-in-out infinite; filter: drop-shadow(0 8px 0 rgba(0,0,0,.08)); }
+  @keyframes bob { 50% { transform: translateY(-14px) rotate(6deg); } }
+  h1 { font-size: clamp(54px, 9vw, 92px); margin: 0; font-weight: 700; letter-spacing: 1px; color: #fff;
+    text-shadow: 0 5px 0 var(--purple), 0 9px 0 rgba(0,0,0,.12); }
+  .tag { font-size: 26px; margin: 10px 0 0; font-weight: 500; }
+  .bank { display: inline-flex; gap: 8px; align-items: center; background: #fff; border-radius: 999px;
+    padding: 8px 18px; font-size: 22px; font-weight: 600; margin-top: 14px; box-shadow: 0 4px 0 rgba(0,0,0,.1); }
+  .subjects { display: flex; gap: 28px; margin-top: 5vh; flex-wrap: wrap; justify-content: center; }
+  .subject { width: 230px; height: 230px; font-size: 34px; font-weight: 700; color: #fff; display: flex;
+    flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+  .subject .em { font-size: 96px; line-height: 1; }
+  .subject:nth-child(1) { background: var(--orange); transform: rotate(-3deg); }
+  .subject:nth-child(2) { background: var(--pink); transform: rotate(2deg); }
+  .subject:nth-child(3) { background: var(--teal); transform: rotate(-1deg); }
+  .note { font-size: 20px; background: rgba(255,255,255,.8); padding: 12px 20px; border-radius: 16px; margin-top: 4vh; max-width: 640px; text-align: center; }
+  .note:empty { display: none; }
+
+  /* Quiz */
+  .topbar { width: 100%; max-width: 900px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .iconbtn { width: 68px; height: 68px; border-radius: 22px; background: #fff; font-size: 34px; }
+  .stars { display: flex; gap: 6px; font-size: 52px; flex-wrap: wrap; justify-content: center; }
+  .stars span { filter: grayscale(1) opacity(.35); transition: filter .3s; }
+  .stars span.on { filter: none; }
+  .stars span.pop { animation: starPop .6s ease; }
+  @keyframes starPop { 40% { transform: scale(1.8) rotate(20deg); } }
+  .stage { flex: 1; width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+  .card { position: relative; width: 100%; background: var(--paper); border-radius: 36px; padding: 26px 24px 22px;
+    text-align: center; box-shadow: 0 10px 0 rgba(43,34,80,.15); border: 5px solid #fff; }
+  .buddy { position: absolute; left: -20px; top: -40px; font-size: 76px; transition: transform .3s; }
+  .buddy.happy { animation: cheer .7s ease; }
+  .buddy.oops { animation: wobble .5s ease; }
+  @keyframes cheer { 30% { transform: translateY(-30px) rotate(-15deg) scale(1.2); } 60% { transform: translateY(0) rotate(10deg); } }
+  .visual { min-height: 180px; display: flex; align-items: center; justify-content: center; }
+  .eq { font-size: clamp(72px, 12vw, 120px); font-weight: 700; letter-spacing: 4px; }
+  .eq .q { color: var(--pink); display: inline-block; animation: bob 1.6s ease-in-out infinite; }
+  .pic { font-size: 150px; line-height: 1.1; animation: bob 3s ease-in-out infinite; }
+  .bigword { font-size: 110px; font-weight: 700; color: var(--purple); }
+  .count { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 14px; font-size: 62px; }
+  .prompt { font-size: 34px; font-weight: 600; margin-top: 8px; }
+  .choices { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .choice { position: relative; }
+  .ans { width: 100%; height: 130px; font-size: 64px; font-weight: 700; color: #fff; }
+  .ans.word { font-size: 52px; }
+  .ans.letter { font-size: 72px; }
+  .choice:nth-child(1) .ans { background: var(--blue); }
+  .choice:nth-child(2) .ans { background: var(--orange); }
+  .choice:nth-child(3) .ans { background: var(--green); }
+  .choice:nth-child(4) .ans { background: var(--pink); }
+  .ans.right { background: var(--green) !important; animation: grow .5s ease; outline: 8px solid #fff; }
+  .ans.wrong { background: #c9c3dd !important; animation: wobble .45s ease; box-shadow: none; }
+  @keyframes grow { 50% { transform: scale(1.1); } }
+  @keyframes wobble { 20%, 60% { transform: translateX(-12px) rotate(-3deg); } 40%, 80% { transform: translateX(12px) rotate(3deg); } }
+  .hear { position: absolute; top: 10px; right: 10px; width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(255,255,255,.9); font-size: 26px; }
+  .earn { position: fixed; font-size: 40px; font-weight: 700; color: #fff; text-shadow: 0 3px 0 var(--purple);
+    pointer-events: none; animation: floatUp 1.3s ease-out forwards; z-index: 50; }
+  @keyframes floatUp { to { transform: translateY(-140px); opacity: 0; } }
+
+  /* Rewards */
+  h2 { font-size: clamp(44px, 7vw, 68px); margin: 2vh 0 0; color: #fff; text-shadow: 0 4px 0 var(--purple); text-align: center; }
+  .sub { font-size: 28px; margin: 6px 0 18px; font-weight: 500; text-align: center; }
+  .videos { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; width: 100%; max-width: 900px; }
+  .vid { background: #fff; border-radius: 26px; padding: 10px 10px 14px; text-align: left; overflow: hidden; }
+  .vid:nth-child(odd) { transform: rotate(-1deg); } .vid:nth-child(even) { transform: rotate(1deg); }
+  .vid img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 18px; display: block; background: #ddd; }
+  .vid span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    font-size: 20px; font-weight: 600; margin: 10px 6px 0; line-height: 1.25; }
+  .vid .resume { display: inline-block; background: var(--yellow); border-radius: 999px; padding: 2px 12px; font-size: 16px; margin: 8px 6px 0; }
+  .big { padding: 20px 34px; font-size: 30px; font-weight: 700; color: #fff; background: var(--purple); }
+  .big.alt { background: #fff; color: var(--ink); }
+  .row { display: flex; gap: 20px; margin-top: 26px; flex-wrap: wrap; justify-content: center; }
+
+  /* Watching */
+  #watch { background: #1d1638; padding: calc(12px + var(--safe-t)) 16px calc(12px + var(--safe-b)); }
+  .playerWrap { position: relative; width: 100%; flex: 1; border-radius: 24px; overflow: hidden; background: #000; }
+  #ytHolder, #ytHolder iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* Covers the video once it plays so taps can't open YouTube links. */
+  .shield { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; font-size: 140px; }
+  .shield.on { display: flex; }
+  .shield.paused { background: rgba(0,0,0,.45); }
+  .shield:not(.paused) .bigplay { display: none; }
+  .watchbar { width: 100%; display: flex; align-items: center; gap: 16px; margin-top: 12px; }
+  .timer { flex: 1; height: 34px; background: rgba(255,255,255,.15); border-radius: 999px; overflow: hidden; position: relative; }
+  .timer i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--pink), var(--orange), var(--yellow), var(--green), var(--blue)); border-radius: 999px; transition: width 1s linear; }
+  .timer b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
+  .watchbar .big { padding: 14px 24px; font-size: 24px; }
+
+  /* Parent area */
+  #parent { background: #f4f2fb; overflow-y: auto; display: none; align-items: stretch; -webkit-user-select: text; user-select: text; }
+  #parent.active { display: block; }
+  .pwrap { max-width: 760px; margin: 0 auto; padding-bottom: 60px; }
+  .ptop { display: flex; justify-content: space-between; align-items: center; }
+  .ptop h3 { font-size: 30px; margin: 10px 0; }
+  .panel { background: #fff; border-radius: 20px; padding: 20px 22px; margin: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .panel h4 { margin: 0 0 12px; font-size: 22px; }
+  .panel p.help { color: #666; font-size: 16px; margin: 4px 0 12px; line-height: 1.4; }
+  .field { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 0; border-top: 1px solid #eee; font-size: 18px; }
+  .field:first-of-type { border-top: 0; }
+  .field select, .field input[type=number] { font: inherit; font-size: 18px; padding: 8px 12px; border-radius: 12px; border: 2px solid #ddd; background: #fff; }
+  .field input[type=checkbox] { width: 28px; height: 28px; accent-color: var(--purple); }
+  .pinput { width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 14px; border: 2px solid #ddd; }
+  textarea.pinput { min-height: 90px; resize: vertical; }
+  .pbtn { font-size: 18px; font-weight: 600; padding: 12px 20px; border-radius: 14px; background: var(--purple); color: #fff; margin-top: 10px; }
+  .pbtn.ghost { background: #eee; color: var(--ink); }
+  .plist { list-style: none; padding: 0; margin: 12px 0 0; }
+  .plist li { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid #f0f0f0; font-size: 17px; }
+  .plist img { width: 72px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; }
+  .plist img.round { width: 44px; aspect-ratio: 1; border-radius: 50%; }
+  .plist .grow { flex: 1; min-width: 0; }
+  .plist .grow small { display: block; color: #888; }
+  .plist .x { background: #ffe1e1; color: #c22; border-radius: 10px; padding: 8px 12px; font-size: 16px; font-weight: 600; }
+  .status { font-size: 16px; margin-top: 10px; min-height: 1em; }
+  .status.err { color: #c22; }
+  .gate { text-align: center; margin-top: 12vh; }
+  .gate .qq { font-size: 54px; font-weight: 700; margin: 16px 0; }
+  .gate input { font: inherit; font-size: 40px; width: 180px; text-align: center; padding: 10px; border-radius: 18px; border: 3px solid #ccc; }
+
+  .confetti { position: fixed; top: -40px; font-size: 34px; pointer-events: none; z-index: 60; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(115vh) rotate(720deg); } }
+  .hidden { display: none !important; }
+
+  @media (max-width: 700px) {
+    .subject { width: 160px; height: 160px; font-size: 26px; } .subject .em { font-size: 64px; }
+    .ans { height: 100px; font-size: 48px; } .ans.word { font-size: 38px; }
+    .pic { font-size: 110px; } .count { font-size: 42px; } .prompt { font-size: 26px; }
+    .videos { gap: 14px; } .vid span { font-size: 16px; }
+  }
+  @media (orientation: landscape) and (max-height: 820px) {
+    .hero { margin-top: 0; } .mascot { font-size: 90px; } .subjects { margin-top: 3vh; }
+    .visual { min-height: 140px; } .pic { font-size: 120px; } .ans { height: 104px; }
+    .count { font-size: 48px; } .stage { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true">
+  <div class="cloud" style="top:6%;animation-duration:70s;animation-delay:-20s">☁️</div>
+  <div class="cloud" style="top:22%;font-size:60px;animation-duration:95s;animation-delay:-60s">☁️</div>
+  <div class="cloud" style="top:40%;font-size:70px;animation-duration:80s;animation-delay:-5s">☁️</div>
+  <div class="hill" style="left:-15vw;background:#7fd66b"></div>
+  <div class="hill" style="right:-20vw;background:#5fc457;bottom:-140px"></div>
+</div>
+
+<!-- HOME -->
+<section id="home" class="screen active">
+  <button class="corner" id="gearBtn">⚙️ Grown-ups</button>
+  <div class="hero">
+    <div class="mascot">⭐</div>
+    <h1>Star Steps</h1>
+    <p class="tag">Answer questions. Earn videos!</p>
+    <div class="bank" id="homeBank">📺 <span></span></div>
+  </div>
+  <div class="subjects" id="subjects"></div>
+  <p class="note" id="homeNote"></p>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" class="screen">
+  <div class="topbar">
+    <button class="iconbtn chunky" id="quitBtn" aria-label="Home">🏠</button>
+    <div class="stars" id="stars"></div>
+    <button class="iconbtn chunky" id="hearBtn" aria-label="Hear again">🔊</button>
+  </div>
+  <div class="stage">
+    <div class="card">
+      <div class="buddy" id="buddy">🦊</div>
+      <div class="visual" id="visual"></div>
+      <div class="prompt" id="prompt"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+  </div>
+</section>
+
+<!-- REWARD -->
+<section id="reward" class="screen">
+  <h2 id="rewardTitle">You did it! 🎉</h2>
+  <p class="sub" id="rewardSub"></p>
+  <div class="videos" id="videoChoices"></div>
+  <div class="row">
+    <button class="big chunky" id="moreBtn">⭐ More questions</button>
+    <button class="big alt chunky" id="rewardHome">🏠 Home</button>
+  </div>
+</section>
+
+<!-- WATCH -->
+<section id="watch" class="screen">
+  <div class="playerWrap">
+    <div id="ytHolder"></div>
+    <div class="shield" id="shield"><span class="bigplay">▶️</span></div>
+  </div>
+  <div class="watchbar">
+    <div class="timer"><i id="timerFill"></i><b id="timerText"></b></div>
+    <button class="big chunky" id="doneWatch">✅ All done</button>
+  </div>
+</section>
+
+<!-- PARENT -->
+<section id="parent" class="screen">
+  <div class="pwrap">
+    <div class="ptop"><h3>👨‍👩‍👧 Grown-ups</h3><button class="pbtn" id="parentDone">Back to game</button></div>
+
+    <div id="gate" class="gate">
+      <p style="font-size:22px">Grown-ups only! What is…</p>
+      <div class="qq" id="gateQ"></div>
+      <input id="gateInput" type="number" inputmode="numeric" autocomplete="off">
+      <div><button class="pbtn" id="gateGo">Enter</button></div>
+      <p class="status err" id="gateMsg"></p>
+    </div>
+
+    <div id="settings" class="hidden">
+      <div class="panel">
+        <h4>📚 Learning</h4>
+        <label class="field">Math questions <input type="checkbox" data-k="math"></label>
+        <label class="field">Phonics questions <input type="checkbox" data-k="phonics"></label>
+        <label class="field">Math level
+          <select data-k="mathLevel" data-num><option value="10">Numbers up to 10</option><option value="20">Numbers up to 20</option></select></label>
+        <label class="field">Questions before picking a video
+          <select data-k="goal" data-num><option>3</option><option>4</option><option>5</option><option>6</option><option>8</option><option>10</option></select></label>
+        <label class="field">Read questions out loud <input type="checkbox" data-k="readAloud"></label>
+      </div>
+
+      <div class="panel">
+        <h4>⏱️ Screen time</h4>
+        <label class="field">Video time earned per correct answer
+          <select data-k="secsPerAnswer" data-num>
+            <option value="30">30 seconds</option><option value="60">1 minute</option><option value="90">1½ minutes</option>
+            <option value="120">2 minutes</option><option value="180">3 minutes</option><option value="300">5 minutes</option></select></label>
+        <label class="field">Most video time per day
+          <select data-k="dailyMinutes" data-num>
+            <option value="15">15 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option>
+            <option value="60">1 hour</option><option value="90">1½ hours</option><option value="0">No limit</option></select></label>
+        <p class="help" id="timeSummary"></p>
+        <div class="field">Watched today: <b id="todayWatched"></b>
+          <span><button class="pbtn ghost" id="resetToday">Reset today</button> <button class="pbtn ghost" id="resetBank">Clear earned time</button></span></div>
+      </div>
+
+      <div class="panel">
+        <h4>📺 YouTube channels</h4>
+        <p class="help">Add channels your child may watch. The game shows 4 random videos from them after each round.
+          Channels need a free YouTube API key (one-time setup):
+          go to <b>console.cloud.google.com</b> → create a project → enable <b>YouTube Data API v3</b> → Credentials → <b>Create API key</b>.
+          The key is saved only on this iPad.</p>
+        <input class="pinput" id="apiKey" type="password" placeholder="YouTube API key" autocomplete="off" autocapitalize="off">
+        <label class="field">Only videos marked “made for kids” <input type="checkbox" data-k="kidsOnly"></label>
+        <input class="pinput" id="chInput" placeholder="Channel link or @handle, e.g. @Numberblocks" autocapitalize="off" style="margin-top:12px">
+        <button class="pbtn" id="chAdd">Add channel</button>
+        <button class="pbtn ghost" id="chRefresh">Refresh videos</button>
+        <div class="status" id="chStatus"></div>
+        <ul class="plist" id="chList"></ul>
+      </div>
+
+      <div class="panel">
+        <h4>🎬 Single videos</h4>
+        <p class="help">No API key? Paste YouTube video links here instead, one per line.</p>
+        <textarea class="pinput" id="vidInput" placeholder="https://www.youtube.com/watch?v=…" autocapitalize="off"></textarea>
+        <button class="pbtn" id="vidAdd">Add videos</button>
+        <div class="status" id="vidStatus"></div>
+        <ul class="plist" id="vidList"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="questions.js"></script>
+<script>
+// ---------- Storage ----------
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, mathLevel: 10, goal: 5,
+  secsPerAnswer: 60, dailyMinutes: 30, readAloud: true, kidsOnly: false };
+const S = Object.assign({}, DEFAULTS, store.get('ss.settings', {}));
+const save = () => store.set('ss.settings', S);
+
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = secs => { secs = Math.max(0, Math.round(secs)); return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`; };
+
+// Earned video time (the "bank") and today's watched time.
+const today = () => new Date().toLocaleDateString('en-CA');
+const getBank = () => store.get('ss.bank', 0);
+const setBank = v => store.set('ss.bank', Math.max(0, v));
+const watchedToday = () => { const d = store.get('ss.daily', {}); return d.date === today() ? d.secs : 0; };
+const addWatched = s => store.set('ss.daily', { date: today(), secs: watchedToday() + s });
+const dailyLeft = () => S.dailyMinutes > 0 ? Math.max(0, S.dailyMinutes * 60 - watchedToday()) : Infinity;
+const playable = () => Math.min(getBank(), dailyLeft());
+
+// ---------- Screens, sound, speech ----------
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  if (id === 'home') renderHome();
+}
+
+let audio;
+function tones(freqs, dur = 0.12, type = 'sine') {
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    if (audio.state === 'suspended') audio.resume();
+    const t = audio.currentTime;
+    freqs.forEach((f, i) => {
+      const o = audio.createOscillator(), g = audio.createGain(), st = t + i * dur;
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, st);
+      g.gain.exponentialRampToValueAtTime(0.25, st + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, st + dur + 0.1);
+      o.connect(g).connect(audio.destination); o.start(st); o.stop(st + dur + 0.15);
+    });
+  } catch {}
+}
+const sfx = {
+  right: () => tones([523, 659, 784, 1047], 0.09, 'triangle'),
+  wrong: () => tones([330, 247], 0.16, 'square'),
+  win: () => tones([523, 659, 784, 659, 784, 1047], 0.11, 'triangle'),
+  tap: () => tones([880], 0.05),
+};
+
+let voice;
+function loadVoice() {
+  const vs = speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang));
+  voice = vs.find(v => /Samantha|Karen|Moira|Tessa|Google US/i.test(v.name)) || vs[0];
+}
+if ('speechSynthesis' in window) { loadVoice(); speechSynthesis.onvoiceschanged = loadVoice; }
+function say(text) {
+  if (!S.readAloud || !('speechSynthesis' in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.85; u.pitch = 1.15; if (voice) u.voice = voice;
+  speechSynthesis.speak(u);
+}
+
+function confetti(n = 40) {
+  const bits = ['🎉', '⭐', '🌟', '🎈', '✨', '🍭', '💫'];
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'confetti'; d.textContent = pick(bits);
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.animationDuration = 1.8 + Math.random() * 1.8 + 's';
+    d.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.append(d); setTimeout(() => d.remove(), 4500);
+  }
+}
+
+// ---------- Home ----------
+function renderHome() {
+  const box = $('#subjects'); box.innerHTML = '';
+  const opts = [];
+  if (S.math) opts.push(['math', '🔢', 'Numbers']);
+  if (S.phonics) opts.push(['phonics', '🔤', 'Letters']);
+  if (S.math && S.phonics) opts.push(['mix', '🎲', 'Mix it up']);
+  for (const [k, em, label] of opts) {
+    const b = document.createElement('button');
+    b.className = 'subject chunky';
+    b.innerHTML = `<span class="em">${em}</span>${label}`;
+    b.onclick = () => startQuiz(k);
+    box.append(b);
+  }
+  const bank = playable();
+  $('#homeBank').classList.toggle('hidden', !(bank > 0));
+  $('#homeBank span').textContent = `${fmt(bank)} of video saved up`;
+  let note = '';
+  if (!videoPool().length) note = 'Grown-ups: tap ⚙️ to add YouTube channels or videos.';
+  else if (dailyLeft() <= 0) note = 'No more videos today, but you can still play and learn! 🌈';
+  if (!opts.length) note = 'Grown-ups: tap ⚙️ and turn on Math or Phonics.';
+  $('#homeNote').textContent = note;
+}
+
+// ---------- Quiz ----------
+let subject = 'mix', correct = 0, q = null, lastKey = '', locked = false, missedThis = false;
+const BUDDIES = ['🦊', '🐼', '🐨', '🐯', '🐵', '🦄', '🐸', '🐙'];
+const PRAISE = ['Great job!', 'You got it!', 'Awesome!', 'Super star!', 'Way to go!', 'Yes! Nice work!', 'Wow, you are smart!'];
+const RETRY = ['Try again!', 'Almost! Try another one.', 'Oops! You can do it.', 'Not quite. Try again!'];
+
+function startQuiz(sub) {
+  subject = sub; correct = 0;
+  $('#buddy').textContent = pick(BUDDIES);
+  show('quiz'); renderStars(); nextQuestion();
+}
+function renderStars(pop) {
+  const el = $('#stars'); el.innerHTML = '';
+  for (let i = 0; i < S.goal; i++) {
+    const s = document.createElement('span'); s.textContent = '⭐';
+    if (i < correct) s.classList.add('on');
+    if (pop && i === correct - 1) s.classList.add('pop');
+    el.append(s);
+  }
+}
+function nextQuestion() {
+  let n = 0;
+  do { q = Questions.generate(subject, { mathLevel: S.mathLevel }); } while (q.key === lastKey && n++ < 10);
+  lastKey = q.key; locked = false; missedThis = false;
+  $('#visual').innerHTML = q.visual;
+  $('#prompt').textContent = q.text;
+  const box = $('#choices'); box.innerHTML = '';
+  q.choices.forEach(c => {
+    const wrap = document.createElement('div'); wrap.className = 'choice';
+    const b = document.createElement('button');
+    b.className = 'ans chunky' + (q.choiceClass ? ' ' + q.choiceClass : '');
+    b.textContent = c; b.onclick = () => answer(b, c);
+    wrap.append(b);
+    if (q.hearChoices) {
+      const h = document.createElement('button');
+      h.className = 'hear'; h.textContent = '🔊'; h.setAttribute('aria-label', 'Hear ' + c);
+      h.onclick = e => { e.stopPropagation(); say(String(c)); };
+      wrap.append(h);
+    }
+    box.append(wrap);
+  });
+  setTimeout(() => say(q.say), 300);
+}
+function buddy(cls) {
+  const b = $('#buddy'); b.classList.remove('happy', 'oops'); void b.offsetWidth; b.classList.add(cls);
+}
+function answer(btn, val) {
+  if (locked || btn.disabled) return;
+  if (val === q.answer) {
+    locked = true; btn.classList.add('right'); sfx.right(); buddy('happy');
+    correct++; renderStars(true);
+    setBank(getBank() + S.secsPerAnswer);
+    floatText(btn, `+${fmt(S.secsPerAnswer)} 📺`);
+    say(pick(PRAISE));
+    setTimeout(() => correct >= S.goal ? finishRound() : nextQuestion(), 1400);
+  } else {
+    btn.classList.add('wrong'); btn.disabled = true; missedThis = true;
+    sfx.wrong(); buddy('oops'); say(pick(RETRY));
+  }
+}
+function floatText(el, text) {
+  const r = el.getBoundingClientRect(), f = document.createElement('div');
+  f.className = 'earn'; f.textContent = text;
+  f.style.left = r.left + r.width / 2 - 60 + 'px'; f.style.top = r.top + 'px';
+  document.body.append(f); setTimeout(() => f.remove(), 1400);
+}
+function finishRound() { confetti(); sfx.win(); showReward(); }
+
+// ---------- Videos ----------
+function videoPool() {
+  const blocked = new Set(store.get('ss.blocked', [])), seen = new Set(), out = [];
+  for (const ch of S.channels) for (const v of ch.videos || []) {
+    if (S.kidsOnly && !v.kids) continue;
+    out.push(v);
+  }
+  out.push(...S.videos);
+  return out.filter(v => !blocked.has(v.id) && !seen.has(v.id) && seen.add(v.id));
+}
+function pickFour() {
+  const recent = new Set(store.get('ss.recent', []));
+  const pool = shuffle(videoPool());
+  return [...pool.filter(v => !recent.has(v.id)), ...pool.filter(v => recent.has(v.id))].slice(0, 4);
+}
+const thumb = id => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+
+function showReward(msg) {
+  show('reward');
+  const box = $('#videoChoices'); box.innerHTML = '';
+  const time = playable();
+  if (dailyLeft() <= 0) {
+    $('#rewardTitle').textContent = 'Amazing work! 🌟';
+    $('#rewardSub').textContent = "That's all the video time for today. Come back tomorrow!";
+    say("Amazing work! That's all the videos for today.");
+    return;
+  }
+  if (time <= 0) {
+    $('#rewardTitle').textContent = 'Keep going! 💪';
+    $('#rewardSub').textContent = 'Answer more questions to earn video time.';
+    return;
+  }
+  const resume = store.get('ss.resume', null);
+  const vids = pickFour();
+  if (resume && videoPool().some(v => v.id === resume.id)) {
+    const i = vids.findIndex(v => v.id === resume.id);
+    if (i >= 0) vids.splice(i, 1); else vids.pop();
+    vids.unshift({ ...resume, isResume: true });
+  }
+  if (!vids.length) {
+    $('#rewardTitle').textContent = 'You did it! 🎉';
+    $('#rewardSub').textContent = 'Ask a grown-up to add some videos. ⚙️';
+    say('You did it! Ask a grown-up to add some videos.');
+    return;
+  }
+  $('#rewardTitle').textContent = msg || 'You did it! 🎉';
+  $('#rewardSub').textContent = `You have ${fmt(time)} of video. Pick one!`;
+  say(msg ? 'Pick another video!' : 'You did it! Pick a video to watch!');
+  vids.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'vid chunky';
+    b.innerHTML = `<img src="${thumb(v.id)}" alt="">${v.isResume ? '<em class="resume">▶ Keep watching</em>' : ''}<span>${esc(v.title)}</span>`;
+    b.onclick = () => { sfx.tap(); playVideo(v, v.isResume ? v.time : 0); };
+    box.append(b);
+  });
+}
+
+let ytReady;
+function loadYT() {
+  if (!ytReady) ytReady = new Promise(res => {
+    if (window.YT && YT.Player) return res();
+    window.onYouTubeIframeAPIReady = res;
+    const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api';
+    document.head.append(s);
+  });
+  return ytReady;
+}
+
+let player = null, current = null, tick = null, startedBank = 0, everPlayed = false;
+async function playVideo(v, start = 0) {
+  current = v; everPlayed = false; startedBank = playable();
+  store.set('ss.resume', null);
+  show('watch'); updateTimer();
+  $('#shield').className = 'shield';
+  $('#ytHolder').innerHTML = '<div id="yt"></div>';
+  await loadYT();
+  player = new YT.Player('yt', {
+    host: 'https://www.youtube-nocookie.com', videoId: v.id, width: '100%', height: '100%',
+    playerVars: { autoplay: 1, start: Math.floor(start), rel: 0, playsinline: 1, controls: 0, disablekb: 1,
+      fs: 0, iv_load_policy: 3, modestbranding: 1 },
+    events: { onReady: e => e.target.playVideo(), onStateChange: onState, onError: onYTError },
+  });
+}
+function onState(e) {
+  const P = YT.PlayerState, shield = $('#shield');
+  if (e.data === P.PLAYING) {
+    if (!everPlayed) { everPlayed = true; const r = store.get('ss.recent', []); store.set('ss.recent', [current.id, ...r.filter(x => x !== current.id)].slice(0, 30)); }
+    shield.className = 'shield on';
+    clearInterval(tick); tick = setInterval(countDown, 1000);
+  } else if (e.data === P.PAUSED) {
+    clearInterval(tick);
+    if (everPlayed) shield.className = 'shield on paused';
+  } else if (e.data === P.ENDED) {
+    clearInterval(tick); stopPlayer();
+    if (playable() > 0) showReward('That was fun! 🍿'); else timesUp(false);
+  }
+}
+function countDown() {
+  setBank(getBank() - 1); addWatched(1); updateTimer();
+  if (playable() <= 0) timesUp(true);
+}
+function updateTimer() {
+  const left = playable();
+  $('#timerFill').style.width = (startedBank > 0 ? Math.min(100, left / startedBank * 100) : 0) + '%';
+  $('#timerText').textContent = `⏳ ${fmt(left)} left`;
+}
+function timesUp(midVideo) {
+  clearInterval(tick);
+  if (midVideo && player && player.getCurrentTime) {
+    store.set('ss.resume', { id: current.id, title: current.title, time: Math.max(0, player.getCurrentTime() - 2) });
+  }
+  stopPlayer(); show('reward');
+  $('#videoChoices').innerHTML = '';
+  if (dailyLeft() <= 0) {
+    $('#rewardTitle').textContent = "Time's up for today! 🌙";
+    $('#rewardSub').textContent = 'Great watching! You can still play and learn.';
+    say("Time's up for today! Great job.");
+  } else {
+    $('#rewardTitle').textContent = "Time's up! ⏰";
+    $('#rewardSub').textContent = midVideo ? 'Answer more questions to keep watching!' : 'Answer more questions to earn more video time!';
+    say(midVideo ? "Time's up! Answer more questions to keep watching." : "Answer more questions to earn more videos!");
+  }
+}
+function stopPlayer() {
+  clearInterval(tick);
+  try { player && player.destroy(); } catch {}
+  player = null; $('#ytHolder').innerHTML = '';
+}
+function onYTError() {
+  const b = store.get('ss.blocked', []);
+  store.set('ss.blocked', [...b, current.id]);
+  stopPlayer(); showReward("Oops! That one won't play 🙈");
+}
+$('#shield').onclick = () => {
+  if (!player || !player.getPlayerState) return;
+  if (player.getPlayerState() === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
+};
+$('#doneWatch').onclick = () => {
+  if (current && player && player.getCurrentTime && player.getCurrentTime() > 5) {
+    store.set('ss.resume', { id: current.id, title: current.title, time: player.getCurrentTime() - 2 });
+  }
+  stopPlayer(); show('home');
+};
+
+// ---------- YouTube Data API (parents' channels) ----------
+async function yt(path, params) {
+  const url = new URL('https://www.googleapis.com/youtube/v3/' + path);
+  for (const [k, v] of Object.entries({ ...params, key: S.apiKey })) url.searchParams.set(k, v);
+  const r = await fetch(url);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error?.message?.replace(/<[^>]+>/g, '') || r.statusText);
+  return j;
+}
+function isoSecs(d) {
+  const m = /P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(d || '') || [];
+  return (+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0);
+}
+function parseChannel(s) {
+  s = s.trim();
+  let m = s.match(/(UC[\w-]{22})/); if (m) return { id: m[1] };
+  m = s.match(/@([\w.\-]+)/); if (m) return { forHandle: '@' + m[1] };
+  if (/^[\w.\-]+$/.test(s)) return { forHandle: '@' + s };
+  return null;
+}
+async function fetchChannel(query) {
+  const c = await yt('channels', { part: 'snippet,contentDetails', ...query });
+  const ch = c.items && c.items[0];
+  if (!ch) throw new Error('Channel not found');
+  const pl = await yt('playlistItems', { part: 'contentDetails', maxResults: 50, playlistId: ch.contentDetails.relatedPlaylists.uploads });
+  const ids = pl.items.map(i => i.contentDetails.videoId);
+  const vs = ids.length ? await yt('videos', { part: 'snippet,contentDetails,status', id: ids.join(',') }) : { items: [] };
+  const videos = vs.items
+    .filter(x => x.status.embeddable && x.status.privacyStatus === 'public' && isoSecs(x.contentDetails.duration) >= 60) // skip Shorts
+    .map(x => ({ id: x.id, title: x.snippet.title, secs: isoSecs(x.contentDetails.duration), kids: !!x.status.madeForKids }));
+  return { id: ch.id, title: ch.snippet.title, thumb: ch.snippet.thumbnails?.default?.url || '', fetchedAt: Date.now(), videos };
+}
+function parseVideoId(s) {
+  s = s.trim();
+  const m = s.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/);
+  if (m) return m[1];
+  return /^[\w-]{11}$/.test(s) ? s : null;
+}
+async function videoInfo(id) {
+  if (S.apiKey) {
+    try {
+      const x = (await yt('videos', { part: 'snippet', id })).items?.[0];
+      if (x) return { id, title: x.snippet.title, channel: x.snippet.channelTitle };
+    } catch {}
+  }
+  try {
+    const r = await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id));
+    if (r.ok) { const j = await r.json(); return { id, title: j.title, channel: j.author_name }; }
+  } catch {}
+  return { id, title: 'YouTube video' };
+}
+async function refreshChannels(force) {
+  if (!S.apiKey) return;
+  for (let i = 0; i < S.channels.length; i++) {
+    const ch = S.channels[i];
+    if (!force && Date.now() - (ch.fetchedAt || 0) < 86400000) continue;
+    try { S.channels[i] = await fetchChannel({ id: ch.id }); } catch (e) { ch.error = e.message; }
+  }
+  save();
+}
+
+// ---------- Parent area ----------
+let gateAnswer = 0;
+function openParent() {
+  show('parent');
+  $('#gate').classList.remove('hidden'); $('#settings').classList.add('hidden');
+  const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+  gateAnswer = a * b; $('#gateQ').textContent = `${a} × ${b}`;
+  $('#gateInput').value = ''; $('#gateMsg').textContent = '';
+}
+$('#gateGo').onclick = () => {
+  if (Number($('#gateInput').value) === gateAnswer) {
+    $('#gate').classList.add('hidden'); $('#settings').classList.remove('hidden'); renderParent();
+  } else { $('#gateMsg').textContent = 'Not quite — try again.'; openParent(); }
+};
+$('#gateInput').onkeydown = e => { if (e.key === 'Enter') $('#gateGo').click(); };
+
+function renderParent() {
+  document.querySelectorAll('[data-k]').forEach(el => {
+    const k = el.dataset.k;
+    if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = String(S[k]);
+  });
+  $('#apiKey').value = S.apiKey;
+  const goalSecs = S.goal * S.secsPerAnswer;
+  $('#timeSummary').textContent = `A full round of ${S.goal} questions earns ${fmt(goalSecs)} of video. Earned time that isn't used is saved for next time.`;
+  $('#todayWatched').textContent = fmt(watchedToday()) + (S.dailyMinutes ? ` of ${S.dailyMinutes}:00` : '') + ` · saved up: ${fmt(getBank())}`;
+  $('#chList').innerHTML = S.channels.map((c, i) => `<li>${c.thumb ? `<img class="round" src="${esc(c.thumb)}" alt="">` : ''}
+    <div class="grow">${esc(c.title)}<small>${(c.videos || []).length} videos${c.error ? ' · ⚠️ ' + esc(c.error) : ''}</small></div>
+    <button class="x" data-ch="${i}">Remove</button></li>`).join('');
+  $('#vidList').innerHTML = S.videos.map((v, i) => `<li><img src="${thumb(v.id)}" alt="">
+    <div class="grow">${esc(v.title)}<small>${esc(v.channel || '')}</small></div>
+    <button class="x" data-vid="${i}">Remove</button></li>`).join('');
+}
+document.querySelectorAll('[data-k]').forEach(el => el.onchange = () => {
+  const k = el.dataset.k;
+  S[k] = el.type === 'checkbox' ? el.checked : ('num' in el.dataset ? Number(el.value) : el.value);
+  save(); renderParent();
+});
+$('#apiKey').onchange = () => { S.apiKey = $('#apiKey').value.trim(); save(); };
+$('#chList').onclick = e => { const i = e.target.dataset.ch; if (i != null) { S.channels.splice(+i, 1); save(); renderParent(); } };
+$('#vidList').onclick = e => { const i = e.target.dataset.vid; if (i != null) { S.videos.splice(+i, 1); save(); renderParent(); } };
+const status = (el, msg, err) => { el.textContent = msg; el.classList.toggle('err', !!err); };
+
+$('#chAdd').onclick = async () => {
+  const st = $('#chStatus'), raw = $('#chInput').value;
+  if (!raw.trim()) return;
+  if (!S.apiKey) return status(st, 'Add your YouTube API key above first (or use single videos below).', true);
+  const query = parseChannel(raw);
+  if (!query) return status(st, "Couldn't read that channel. Try the link from the channel page, or its @handle.", true);
+  status(st, 'Looking up channel…');
+  try {
+    const ch = await fetchChannel(query);
+    if (S.channels.some(c => c.id === ch.id)) return status(st, 'That channel is already added.');
+    S.channels.push(ch); save(); $('#chInput').value = ''; renderParent();
+    status(st, `Added ${ch.title} — ${ch.videos.length} videos.`);
+  } catch (e) { status(st, 'Error: ' + e.message, true); }
+};
+$('#chRefresh').onclick = async () => {
+  const st = $('#chStatus');
+  if (!S.apiKey) return status(st, 'Add your YouTube API key first.', true);
+  status(st, 'Refreshing…'); await refreshChannels(true); renderParent(); status(st, 'Videos refreshed.');
+};
+$('#vidAdd').onclick = async () => {
+  const st = $('#vidStatus'), lines = $('#vidInput').value.split(/\s+/).filter(Boolean);
+  let added = 0, bad = 0;
+  status(st, 'Adding…');
+  for (const line of lines) {
+    const id = parseVideoId(line);
+    if (!id) { bad++; continue; }
+    if (S.videos.some(v => v.id === id)) continue;
+    S.videos.push(await videoInfo(id)); added++;
+  }
+  save(); $('#vidInput').value = ''; renderParent();
+  status(st, `Added ${added} video${added === 1 ? '' : 's'}.` + (bad ? ` ${bad} link${bad === 1 ? '' : 's'} didn't look like YouTube videos.` : ''), bad > 0);
+};
+$('#resetToday').onclick = () => { store.set('ss.daily', {}); renderParent(); };
+$('#resetBank').onclick = () => { setBank(0); store.set('ss.resume', null); renderParent(); };
+$('#parentDone').onclick = () => show('home');
+
+// ---------- Wiring ----------
+$('#gearBtn').onclick = openParent;
+$('#quitBtn').onclick = () => { speechSynthesis?.cancel(); show('home'); };
+$('#hearBtn').onclick = () => q && say(q.say);
+$('#moreBtn').onclick = () => startQuiz(subject);
+$('#rewardHome').onclick = () => show('home');
+document.addEventListener('gesturestart', e => e.preventDefault()); // no pinch-zoom on iPad
+
+renderHome();
+refreshChannels(false).then(renderHome);
+</script>
+</body>
+</html>
