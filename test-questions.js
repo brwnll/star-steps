@@ -33,15 +33,22 @@ for (const [right, wrongs] of Object.entries(data.SPELLING)) if (wrongs.includes
 
 // ---- Generate and check ----
 // Hand-written lessons: every item has one answer plus three different wrong ones, and covers every grade/level.
+const bodyJobs = Object.values(Lessons.BODY_PARTS).flatMap(p => p[1]);
+if (new Set(bodyJobs).size !== bodyJobs.length) errors.push('BODY_PARTS: a job is listed under two parts');
+const forceActs = Object.values(Lessons.FORCES).flat().map(x => x[0]);
+if (new Set(forceActs).size !== forceActs.length) errors.push('FORCES: an action is both a push and a pull');
+if (Lessons.NEEDS.wants.some(w => Lessons.NEEDS.animals.includes(w) || Lessons.NEEDS.plants.includes(w))) errors.push('NEEDS: a want is also a need');
 for (const [name, list] of [['PASSAGES', Lessons.PASSAGES], ['FACTS', Lessons.FACTS]]) {
   for (const it of list) {
     const all = [it.a, ...it.wrong];
     if (it.wrong.length !== 3 || new Set(all.map(x => x.toLowerCase())).size !== 4) errors.push(`${name}: bad choices for "${it.q}"`);
     if (![1, 2, 3].includes(it.g) || ![1, 2].includes(it.l)) errors.push(`${name}: bad grade/level for "${it.q}"`);
   }
-  for (const g of [1, 2, 3]) for (const l of [1, 2]) if (list.filter(x => x.g === g && x.l === l).length < 8) errors.push(`${name}: fewer than 8 items for grade ${g} level ${l}`);
+  for (const g of [1, 2, 3]) for (const l of [1, 2]) if (list.filter(x => x.g === g && x.l === l).length < (name === 'PASSAGES' ? 24 : 10)) errors.push(`${name}: too few items for grade ${g} level ${l}`);
 }
 for (const [name, [emoji, group, minGrade]] of Object.entries(Lessons.ANIMALS)) if (!emoji || !Lessons.GROUPS[3].includes(group) || ![1, 2, 3].includes(minGrade)) errors.push(`ANIMALS: bad entry ${name}`);
+const passTexts = Lessons.PASSAGES.map(p => p.text);
+if (new Set(passTexts).size !== passTexts.length) errors.push('PASSAGES: duplicate passage');
 for (const seq of Lessons.SEQUENCES) if (new Set(seq.steps).size !== seq.steps.length || seq.steps.length < 3) errors.push(`SEQUENCES: bad steps ${seq.steps}`);
 const habitatAnimals = Object.values(Lessons.HABITATS).flatMap(h => h[1].map(a => a[0]));
 if (new Set(habitatAnimals).size !== habitatAnimals.length) errors.push('HABITATS: an animal is listed in two habitats');
@@ -60,7 +67,7 @@ for (let i = 0; i < N; i++) {
   // Shared rules
   if (new Set(choices.map(String)).size !== choices.length) fail(q, 'Duplicate choices');
   if (choices.filter(c => c === answer).length !== 1) fail(q, 'Answer not in choices exactly once');
-  const want = ['compare', 'evenodd', 'homophone', 'cmpfrac', 'living'].includes(q.type) ? 2
+  const want = ['compare', 'evenodd', 'homophone', 'cmpfrac', 'living', 'push'].includes(q.type) ? 2
     : q.type === 'matter' ? (grade === 1 ? 2 : 3) : ['order', 'lifecycle'].includes(q.type) ? q.choices.length : 4;
   if (choices.length !== want || (['order', 'lifecycle'].includes(q.type) && (choices.length < 3 || choices.length > 4))) fail(q, `Expected ${want} choices`);
   if (!q.say || !q.text || !q.visual) fail(q, 'Missing text');
@@ -157,6 +164,10 @@ for (let i = 0; i < N; i++) {
         if (q.text.includes('FIRST') && q.idx !== 0) fail(q, 'Life cycle FIRST wrong');
         if (!q.say.includes(`life of a ${q.name}`)) fail(q, 'Spoken life-cycle question does not name the creature'); break; }
       case 'plantpart': if (!Lessons.PLANT_PARTS[answer].includes(q.job)) fail(q, 'Plant part wrong'); break;
+      case 'bodypart': if (!Lessons.BODY_PARTS[answer] || !Lessons.BODY_PARTS[answer][1].includes(q.job)) fail(q, 'Body part wrong'); break;
+      case 'needs': if (!Lessons.NEEDS[q.who].includes(answer) || choices.some(c => c !== answer && !Lessons.NEEDS.wants.includes(c))) fail(q, 'Needs wrong'); break;
+      case 'push': if (!Lessons.FORCES[answer].some(x => x[0] === q.act)) fail(q, 'Push/pull wrong'); break;
+      case 'moon': if (!q.visual.includes(Lessons.MOON[answer])) fail(q, 'Moon phase wrong'); break;
       default: fail(q, 'Unknown science type');
     }
     if (/\b(a|an) (a|an|the|milk|juice|honey|rain|steam|smoke|grass)\b/.test(q.text) || /\ba [aeiou]/.test(q.text.replace(/a unit/g, ''))) fail(q, 'Article grammar');

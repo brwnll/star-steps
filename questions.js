@@ -644,6 +644,28 @@
       const ans = pick(Object.keys(Lessons.PLANT_PARTS)), job = pick(Lessons.PLANT_PARTS[ans]);
       return { key: `plant${job}`, visual: picHtml('🌻', 'plant'), text: `Which part of a plant ${job}?`, say: `Which part of a plant ${job}?`, choices: wordChoices(ans, Object.keys(Lessons.PLANT_PARTS)), answer: ans, choiceClass: 'word', job };
     },
+    bodypart() {
+      const ans = pick(Object.keys(Lessons.BODY_PARTS)), [emoji, jobs] = Lessons.BODY_PARTS[ans], job = pick(jobs);
+      const ask = `What body part ${job}?`;
+      return { key: `body${job}`, visual: `<div class="pic">${emoji}</div>`, text: ask, say: ask,
+        choices: wordChoices(ans, Object.keys(Lessons.BODY_PARTS)), answer: ans, choiceClass: 'word', job };
+    },
+    needs() {
+      const who = pick(['animals', 'plants']), ans = pick(Lessons.NEEDS[who]);
+      const ask = `Which of these do ${who} need to stay alive?`;
+      return { key: `need${who}${ans}`, visual: `<div class="pic">${who === 'plants' ? '🌱' : '🐾'}</div>`, text: ask, say: ask,
+        choices: shuffle([ans, ...pickN(Lessons.NEEDS.wants, 3)]), answer: ans, choiceClass: 'word', who };
+    },
+    push() {
+      const ans = pick(['push', 'pull']), [act, emoji] = pick(Lessons.FORCES[ans]);
+      const ask = `Is ${act} a push or a pull?`;
+      return { key: `force${act}`, visual: picHtml(emoji, act), text: ask, say: ask, choices: shuffle(['push', 'pull']), answer: ans, choiceClass: 'word', act };
+    },
+    moon() {
+      const ans = pick(Object.keys(Lessons.MOON));
+      return { key: `moon${ans}`, visual: `<div class="pic">${Lessons.MOON[ans]}</div>`, text: 'Which moon phase is this?', say: 'Look at the moon. Which phase is it?',
+        choices: shuffle(Object.keys(Lessons.MOON)), answer: ans, choiceClass: 'word' };
+    },
     fact(grade, level) {
       const item = pick(Lessons.FACTS.filter(x => x.g === grade && x.l === level));
       return { key: `fact${item.q.slice(0, 24)}`, visual: `<div class="pic">🔬</div>`, text: item.q, say: item.q,
@@ -664,9 +686,9 @@
       3: { 1: ['passage', 'passage', 'passage', 'order'], 2: ['passage', 'passage', 'passage', 'order'] },
     },
     science: {
-      1: { 1: ['living', 'living', 'group', 'sense', 'matter', 'fact', 'fact'], 2: ['living', 'group', 'sense', 'matter', 'habitat', 'lifecycle', 'plantpart', 'fact', 'fact'] },
-      2: { 1: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'sense', 'fact', 'fact'], 2: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'fact', 'fact', 'fact'] },
-      3: { 1: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'plantpart'], 2: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'matter'] },
+      1: { 1: ['living', 'group', 'sense', 'matter', 'needs', 'push', 'fact', 'fact'], 2: ['living', 'group', 'sense', 'matter', 'habitat', 'lifecycle', 'plantpart', 'bodypart', 'moon', 'fact', 'fact'] },
+      2: { 1: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'bodypart', 'needs', 'push', 'moon', 'fact', 'fact'], 2: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'bodypart', 'moon', 'fact', 'fact', 'fact'] },
+      3: { 1: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'plantpart', 'bodypart'], 2: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'matter', 'moon'] },
     },
     phonics: {
       1: { 1: ['begin', 'begin', 'begin', 'sight', 'sight', 'cvc'], 2: ['begin', 'begin', 'cvc', 'cvc', 'rhyme', 'sight', 'sight'] },
@@ -680,7 +702,7 @@
     math: { 1: ['Numbers up to 10', 'Numbers up to 20'], 2: ['Adding without carrying & skip counting', 'Carrying, time & money'], 3: ['Easy times tables & fractions', 'All times tables & dividing'] },
     phonics: { 1: ['Letters & sounds', 'Words & rhymes'], 2: ['Blends & long vowels', 'Plurals & compound words'], 3: ['Opposites & spelling', 'Prefixes & past tense'] },
     reading: { 1: ['Short stories', 'Longer stories & why'], 2: ['Stories & facts', 'Reading between the lines'], 3: ['Longer passages', 'Main ideas & word meanings'] },
-    science: { 1: ['Living things & senses', 'Habitats & life cycles'], 2: ['Animals, matter & plants', 'Matter, magnets & space'], 3: ['Forces, energy & living things', 'Earth, space & changes'] },
+    science: { 1: ['Living things, senses & pushes', 'Habitats, life cycles & the moon'], 2: ['Animals, matter & body parts', 'Matter, magnets & space'], 3: ['Forces, energy & living things', 'Earth, space & changes'] },
   };
   const SUBJECTS = ['math', 'phonics', 'reading', 'science'];
 

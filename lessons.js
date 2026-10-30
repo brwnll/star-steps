@@ -71,6 +71,102 @@
     { g: 3, l: 2, text: 'Rosa trained for the spelling bee for weeks. In the final round she missed "necessary". She was disappointed, but she shook the winner\'s hand and said, "Next year!"', q: 'What does Rosa\'s last line show about her?', a: 'she will not give up', wrong: ['she is angry', 'she is a bad speller', 'she wants to quit'] },
     { g: 3, l: 2, text: 'The lighthouse keeper climbed the stairs every evening to light the lamp. Ships far out at sea used its beam to steer clear of the rocks. In fifty years, he never missed a night.', q: 'What does the passage suggest about the keeper?', a: 'he was dependable', wrong: ['he was afraid of the dark', 'he disliked ships', 'he was often late'] },
     { g: 3, l: 2, text: 'Hummingbirds are the only birds that can fly backward. Their wings beat about fifty times each second. To get enough energy, they drink nectar from hundreds of flowers a day.', q: 'Why do hummingbirds visit so many flowers?', a: 'they need a lot of energy', wrong: ['they are lost', 'they like the colors', 'to build nests'] },
+    // ---- More grade 1, level 1 ----
+    { g: 1, l: 1, text: 'Omar has a pet rabbit. Its name is Snow.', q: 'What is the rabbit\'s name?', a: 'Snow', wrong: ['Omar', 'Max', 'Fluff'] },
+    { g: 1, l: 1, text: 'Lena likes to swim. She goes to the pool on Sunday.', q: 'When does Lena go to the pool?', a: 'on Sunday', wrong: ['on Monday', 'at night', 'in winter'] },
+    { g: 1, l: 1, text: 'The frog sits on a log. It is green and wet.', q: 'Where is the frog?', a: 'on a log', wrong: ['in a tree', 'on a rock', 'in a cup'] },
+    { g: 1, l: 1, text: 'Theo got a new red bike. He rides it to the park.', q: 'What color is the bike?', a: 'red', wrong: ['blue', 'black', 'pink'] },
+    { g: 1, l: 1, text: 'Rosa has a big dog. The dog likes to dig in the sand.', q: 'What does the dog like to do?', a: 'dig in the sand', wrong: ['swim', 'sleep', 'bark at cats'] },
+    { g: 1, l: 1, text: 'Mom makes soup. It is hot, so Jaden blows on it.', q: 'Why does Jaden blow on the soup?', a: 'it is hot', wrong: ['it is cold', 'it is salty', 'it is funny'] },
+    { g: 1, l: 1, text: 'The hen has five eggs. She sits on them to keep them warm.', q: 'How many eggs does the hen have?', a: 'five', wrong: ['two', 'three', 'ten'] },
+    { g: 1, l: 1, text: 'Maya sees a bug on a leaf. The bug is red with black dots.', q: 'What color are the dots?', a: 'black', wrong: ['red', 'green', 'white'] },
+    { g: 1, l: 1, text: 'Noah can hop on one foot. He hops ten times!', q: 'How many times does Noah hop?', a: 'ten', wrong: ['one', 'two', 'five'] },
+    { g: 1, l: 1, text: 'It is snowing. Lily and Dad make a snowman.', q: 'What do Lily and Dad make?', a: 'a snowman', wrong: ['a cake', 'a kite', 'a fort'] },
+    { g: 1, l: 1, text: 'The baby cries. Mom gives him his bottle. He stops crying.', q: 'What does Mom give the baby?', a: 'his bottle', wrong: ['a toy', 'a book', 'a hat'] },
+    { g: 1, l: 1, text: 'Amir has a kite. The kite is yellow like the sun.', q: 'What is yellow?', a: 'the kite', wrong: ['the dog', 'the car', 'the hat'] },
+    { g: 1, l: 1, text: 'Grace lost a tooth. She put it under her pillow.', q: 'Where did Grace put the tooth?', a: 'under her pillow', wrong: ['in a box', 'in the sink', 'in her bag'] },
+    { g: 1, l: 1, text: 'The ducks swim in a line. The mom duck is in front.', q: 'Who is in front?', a: 'the mom duck', wrong: ['the baby duck', 'a fish', 'a frog'] },
+    { g: 1, l: 1, text: 'Tomas has a blue cup. He fills it with milk.', q: 'What is in the cup?', a: 'milk', wrong: ['water', 'juice', 'soup'] },
+    // ---- More grade 1, level 2 ----
+    { g: 1, l: 2, text: 'Hana put on her coat and mittens. She opened the door. Brrr!', q: 'What was it like outside?', a: 'cold', wrong: ['hot', 'rainy', 'dark'] },
+    { g: 1, l: 2, text: 'The cat sat by the empty bowl. It meowed and meowed. Dad got the cat food.', q: 'What did the cat want?', a: 'food', wrong: ['a nap', 'to go out', 'a toy'] },
+    { g: 1, l: 2, text: 'Diego built a tall tower of blocks. His baby sister crawled over. Crash!', q: 'What will Diego probably see next?', a: 'the blocks on the floor', wrong: ['a bigger tower', 'a new toy', 'his sister asleep'] },
+    { g: 1, l: 2, text: 'Priya planted a sunflower seed. Every day she watered it. Now it is taller than she is!', q: 'What is this story mostly about?', a: 'Priya growing a sunflower', wrong: ['Priya taking a bath', 'a tall tree', 'a trip to the store'] },
+    { g: 1, l: 2, text: '"Can I have the red crayon?" asked Omar. "Sure," said Lena. "Thank you!" said Omar.', q: 'Who gave Omar the crayon?', a: 'Lena', wrong: ['Omar', 'the teacher', 'Mom'] },
+    { g: 1, l: 2, text: 'The puppy ran in the mud. Then it ran into the house. Mom said, "Bath time!"', q: 'Why did the puppy need a bath?', a: 'it was muddy', wrong: ['it was sleepy', 'it was hungry', 'it was cold'] },
+    { g: 1, l: 2, text: 'Theo looked up. A big gray cloud covered the sun. He went to get his umbrella.', q: 'What does Theo think will happen?', a: 'it will rain', wrong: ['it will snow', 'the sun will get hotter', 'it will get windy'] },
+    { g: 1, l: 2, text: 'Rosa dropped her toy boat in the pond. It floated away. A duck pushed it back to her!', q: 'How did Rosa get her boat back?', a: 'a duck pushed it', wrong: ['she swam', 'Dad got it', 'it sank'] },
+    { g: 1, l: 2, text: 'Jaden could not sleep. The room was too dark. Mom turned on a night light.', q: 'Why could Jaden not sleep?', a: 'the room was too dark', wrong: ['it was too loud', 'he was hungry', 'he was sick'] },
+    { g: 1, l: 2, text: 'Maya and Noah raced to the tree. Noah got there first. "Good race!" said Maya.', q: 'Who won the race?', a: 'Noah', wrong: ['Maya', 'both of them', 'nobody'] },
+    { g: 1, l: 2, text: 'Lily picked all the apples she could reach. Dad lifted her up. Now she could reach the top ones.', q: 'Why did Dad lift Lily?', a: 'so she could reach the high apples', wrong: ['she was tired', 'she was scared', 'to put her in the car'] },
+    { g: 1, l: 2, text: 'Amir\'s shoes were on the wrong feet. They felt funny. He switched them and smiled.', q: 'What did Amir do to fix his shoes?', a: 'switched them', wrong: ['took them off', 'got new shoes', 'tied them'] },
+    { g: 1, l: 2, text: 'The bird made a nest. She laid three eggs in it. Soon she heard peep, peep, peep!', q: 'What made the peeping sound?', a: 'baby birds', wrong: ['the wind', 'a cat', 'a car'] },
+    { g: 1, l: 2, text: 'Grace was hungry. She looked in the bag. Oh no, her lunch was at home!', q: 'How does Grace feel?', a: 'upset', wrong: ['happy', 'sleepy', 'proud'] },
+    { g: 1, l: 2, text: 'Tomas wanted to see the stars. He waited until it got dark. Then he went outside and looked up.', q: 'Why did Tomas wait?', a: 'stars show when it is dark', wrong: ['he was tired', 'it was raining', 'Mom said no'] },
+    // ---- More grade 2, level 1 ----
+    { g: 2, l: 1, text: 'A rainbow has seven colors. You can see one when the sun shines through rain. The colors always come in the same order, starting with red.', q: 'How many colors are in a rainbow?', a: 'seven', wrong: ['three', 'five', 'ten'] },
+    { g: 2, l: 1, text: 'Hana\'s class took a trip to the fire station. A firefighter showed them the truck. Hana got to try on a heavy helmet.', q: 'What did Hana try on?', a: 'a helmet', wrong: ['boots', 'a coat', 'gloves'] },
+    { g: 2, l: 1, text: 'Astronauts wear special suits in space. The suits give them air to breathe. They also keep astronauts warm, because space is very cold.', q: 'What do space suits give astronauts?', a: 'air to breathe', wrong: ['food', 'water', 'music'] },
+    { g: 2, l: 1, text: 'Diego helps bake bread on Sundays. First he mixes flour, water, and yeast. The dough rests for an hour, and then it goes in the hot oven.', q: 'How long does the dough rest?', a: 'an hour', wrong: ['a minute', 'all day', 'a week'] },
+    { g: 2, l: 1, text: 'Soccer is played with a round ball. Players may not touch the ball with their hands. Only the goalie can.', q: 'Who may touch the ball with their hands?', a: 'only the goalie', wrong: ['every player', 'the coach', 'nobody'] },
+    { g: 2, l: 1, text: 'Priya got a library book about sharks. She learned that sharks have many rows of teeth. When a tooth falls out, a new one moves forward.', q: 'What happens when a shark loses a tooth?', a: 'a new one moves forward', wrong: ['it grows a fin', 'it stops eating', 'it goes to the dentist'] },
+    { g: 2, l: 1, text: 'Omar\'s grandpa taught him to fish. They sat on the dock for an hour. Omar caught one small fish and let it go.', q: 'What did Omar do with the fish?', a: 'let it go', wrong: ['cooked it', 'took it home', 'gave it to Grandpa'] },
+    { g: 2, l: 1, text: 'Crayons are made from wax. The wax is melted and mixed with color. Then it is poured into molds and cooled until it is hard.', q: 'What are crayons made from?', a: 'wax', wrong: ['wood', 'clay', 'paper'] },
+    { g: 2, l: 1, text: 'Lena\'s town had a parade on the Fourth of July. There were drums, horses, and a giant balloon shaped like a dog. Lena waved a little flag.', q: 'What was the giant balloon shaped like?', a: 'a dog', wrong: ['a cat', 'a star', 'a car'] },
+    { g: 2, l: 1, text: 'A spider is not an insect. Insects have six legs, but spiders have eight. Spiders also have no wings.', q: 'How many legs does a spider have?', a: 'eight', wrong: ['six', 'four', 'ten'] },
+    { g: 2, l: 1, text: 'Theo built a car out of a shoebox. He used bottle caps for wheels. His car rolled all the way across the kitchen floor.', q: 'What did Theo use for wheels?', a: 'bottle caps', wrong: ['coins', 'cookies', 'buttons'] },
+    { g: 2, l: 1, text: 'Rosa\'s family went camping. They slept in a tent and cooked over a fire. At night they heard an owl hooting.', q: 'Where did Rosa\'s family sleep?', a: 'in a tent', wrong: ['in a cabin', 'in the car', 'in a hotel'] },
+    { g: 2, l: 1, text: 'The moon goes around the Earth. It takes about a month. That is why the moon looks a little different each night.', q: 'How long does the moon take to go around the Earth?', a: 'about a month', wrong: ['about a day', 'about a year', 'about an hour'] },
+    { g: 2, l: 1, text: 'Jaden\'s baby brother took his first steps today. He wobbled and fell on the rug. Then he got up and tried again.', q: 'What did the baby do after he fell?', a: 'got up and tried again', wrong: ['cried', 'went to sleep', 'crawled away'] },
+    { g: 2, l: 1, text: 'Maple syrup comes from trees. In early spring, people tap the trees and collect sap. The sap is boiled for hours until it is thick and sweet.', q: 'When do people collect sap?', a: 'in early spring', wrong: ['in summer', 'in winter', 'at night'] },
+    // ---- More grade 2, level 2 ----
+    { g: 2, l: 2, text: 'Maya tugged at her shoelace. The knot only got tighter. She took a deep breath, loosened it bit by bit, and finally it came free.', q: 'What does this story show about Maya?', a: 'she does not give up', wrong: ['she is in a hurry', 'she likes new shoes', 'she is sleepy'] },
+    { g: 2, l: 2, text: 'Noah glanced at the clock, then at the door, then at the clock again. His grandmother\'s plane had landed an hour ago.', q: 'How does Noah feel?', a: 'eager for Grandma to arrive', wrong: ['angry at Grandma', 'bored with clocks', 'afraid of planes'] },
+    { g: 2, l: 2, text: 'The leaves crunched under Lily\'s boots. She zipped her jacket to her chin and watched her breath make little clouds.', q: 'What season is it?', a: 'fall', wrong: ['summer', 'spring', 'the rainy season'] },
+    { g: 2, l: 2, text: 'Amir had never seen the ocean. When the car crested the hill, there it was, enormous and blue. Amir forgot to breathe.', q: 'What does "enormous" mean?', a: 'very big', wrong: ['very cold', 'very loud', 'very far'] },
+    { g: 2, l: 2, text: 'The soccer game was tied. Grace passed the ball instead of shooting. Her teammate scored, and Grace cheered loudest of all.', q: 'What is Grace like?', a: 'a good teammate', wrong: ['a poor player', 'a show-off', 'a quiet person'] },
+    { g: 2, l: 2, text: 'Tomas forgot to water the tomato plants for a week. When he finally checked, the leaves were droopy and brown at the edges.', q: 'Why were the leaves droopy?', a: 'the plants needed water', wrong: ['it was too cold', 'a bug ate them', 'they were ready to pick'] },
+    { g: 2, l: 2, text: 'Hana packed her swimsuit, goggles, and a towel. She was so excited that she could barely sit still in the car.', q: 'Where is Hana probably going?', a: 'to the pool', wrong: ['to the library', 'to the dentist', 'to school'] },
+    { g: 2, l: 2, text: 'A beaver\'s teeth never stop growing. Chewing wood wears them down. If a beaver stopped chewing, its teeth would grow too long to use.', q: 'Why must a beaver keep chewing?', a: 'to wear down its teeth', wrong: ['because it is hungry', 'to build muscles', 'because wood tastes good'] },
+    { g: 2, l: 2, text: 'Diego peeked into the oven every two minutes. "A watched pot never boils," Grandma laughed. The cookies were not ready any faster.', q: 'What does Grandma mean?', a: 'waiting feels slow when you keep checking', wrong: ['cookies need a pot', 'the oven is broken', 'Diego should go outside'] },
+    { g: 2, l: 2, text: 'Priya\'s little brother wanted to help carry the groceries. She handed him the bread and kept the heavy bags herself.', q: 'Why did Priya give him the bread?', a: 'it was light enough for him to carry', wrong: ['she did not like bread', 'he asked for a snack', 'the bags were empty'] },
+    { g: 2, l: 2, text: 'The classroom was silent as Omar read his poem. When he finished, the room exploded with clapping. His ears turned pink.', q: 'How did the class feel about the poem?', a: 'they loved it', wrong: ['they were bored', 'they did not hear it', 'they were angry'] },
+    { g: 2, l: 2, text: 'Lena stacked the cans at the food drive. Her arms ached, but every can meant a meal for someone. She reached for the next box.', q: 'Why does Lena keep working even though she is tired?', a: 'she knows the food helps people', wrong: ['the teacher is watching', 'she wants a prize', 'she likes cans'] },
+    { g: 2, l: 2, text: 'The old bridge creaked and swayed. Theo stepped onto it slowly, holding the rope rail with both hands.', q: 'How is Theo feeling?', a: 'nervous', wrong: ['bored', 'sleepy', 'cheerful'] },
+    { g: 2, l: 2, text: 'Rosa trained her dog to sit by giving it a treat each time. After a week, the dog sat as soon as she said the word.', q: 'What is the best title for this story?', a: 'Teaching a Dog to Sit', wrong: ['Rosa\'s Favorite Treats', 'A Week at the Beach', 'How to Buy a Dog'] },
+    { g: 2, l: 2, text: 'Jaden\'s ice cream began to drip down the cone. He licked faster, but the sun was faster still. Soon his hand was sticky and the cone was empty.', q: 'Why did the ice cream melt?', a: 'it was hot in the sun', wrong: ['Jaden dropped it', 'it was old', 'the cone had a hole'] },
+    // ---- More grade 3, level 1 ----
+    { g: 3, l: 1, text: 'The Wright brothers built the first airplane that could really fly. In 1903, their plane stayed in the air for twelve seconds. Today, planes can fly for many hours without landing.', q: 'How long did the first flight last?', a: 'twelve seconds', wrong: ['twelve minutes', 'an hour', 'a whole day'] },
+    { g: 3, l: 1, text: 'Hana wanted to earn money for a new bike. She walked the neighbors\' dogs every afternoon for two months. By June, she had saved enough and rode her bike home from the store.', q: 'How did Hana earn money?', a: 'by walking dogs', wrong: ['by washing cars', 'by babysitting', 'by selling lemonade'] },
+    { g: 3, l: 1, text: 'Octopuses are clever animals. They can open jars, squeeze through tiny holes, and change color to hide. Some have even escaped from aquarium tanks.', q: 'Which is something an octopus can do?', a: 'change color to hide', wrong: ['fly short distances', 'live on land', 'bark like a dog'] },
+    { g: 3, l: 1, text: 'Noah\'s science project was a model volcano. He mixed baking soda and vinegar inside it. Red foam bubbled over the top, and the judges gave him a blue ribbon.', q: 'What made the foam?', a: 'baking soda and vinegar', wrong: ['soap and water', 'salt and sugar', 'flour and milk'] },
+    { g: 3, l: 1, text: 'Bread is made from wheat. Farmers harvest the wheat, and a mill grinds it into flour. Bakers mix the flour with water and yeast, let the dough rise, and bake it.', q: 'What does a mill do?', a: 'grinds wheat into flour', wrong: ['bakes the bread', 'plants the wheat', 'sells the bread'] },
+    { g: 3, l: 1, text: 'Lily joined the chess club in September. At first she lost every game. She studied openings with her uncle, and by spring she won the club tournament.', q: 'When did Lily win the tournament?', a: 'in spring', wrong: ['in September', 'in winter', 'on the first day'] },
+    { g: 3, l: 1, text: 'Earth has one moon, but Jupiter has dozens. Jupiter is the largest planet in our solar system. More than a thousand Earths could fit inside it.', q: 'Which planet is the largest?', a: 'Jupiter', wrong: ['Earth', 'Mars', 'the moon'] },
+    { g: 3, l: 1, text: 'Amir and his dad built a raised garden bed from old boards. They filled it with soil and planted lettuce, carrots, and peas. The rabbits found the lettuce first.', q: 'Who ate the lettuce?', a: 'rabbits', wrong: ['Amir', 'his dad', 'birds'] },
+    { g: 3, l: 1, text: 'A compass needle always points north. Hikers use a compass with a map to find their way. Before compasses, sailors steered by the stars.', q: 'Which way does a compass needle point?', a: 'north', wrong: ['south', 'toward the sun', 'toward home'] },
+    { g: 3, l: 1, text: 'Grace\'s class raised butterflies. They watched caterpillars eat, form chrysalises, and finally emerge with wet, folded wings. On Friday they released them in the garden.', q: 'What did the class do on Friday?', a: 'released the butterflies', wrong: ['caught more caterpillars', 'had a party', 'went on a hike'] },
+    { g: 3, l: 1, text: 'Tomas plays goalie on his soccer team. In the last game he blocked nine shots. The team won two to one, and his coach called him the player of the game.', q: 'How many shots did Tomas block?', a: 'nine', wrong: ['two', 'one', 'twelve'] },
+    { g: 3, l: 1, text: 'Thunder is the sound lightning makes. Light travels faster than sound, so you see the flash before you hear the boom. Counting the seconds between them tells you how far away the storm is.', q: 'Why do you see lightning before you hear thunder?', a: 'light travels faster than sound', wrong: ['thunder happens first', 'your ears are slow', 'lightning is quiet'] },
+    { g: 3, l: 1, text: 'Maya\'s family adopted a cat from the shelter. The cat hid under the bed for three days. On the fourth day, it curled up on Maya\'s lap and purred.', q: 'How long did the cat hide?', a: 'three days', wrong: ['one day', 'a week', 'a month'] },
+    { g: 3, l: 1, text: 'Recycling turns old things into new ones. Plastic bottles can become fleece jackets. Old newspapers can become cardboard boxes.', q: 'What can plastic bottles become?', a: 'fleece jackets', wrong: ['cardboard boxes', 'glass jars', 'new trees'] },
+    { g: 3, l: 1, text: 'Diego ran the one-mile race at field day. He started too fast and had to slow down. He finished fourth, but he beat his own best time by a full minute.', q: 'What place did Diego finish?', a: 'fourth', wrong: ['first', 'second', 'last'] },
+    // ---- More grade 3, level 2 ----
+    { g: 3, l: 2, text: 'Priya\'s violin screeched on the high note. Her little brother covered his ears. Priya played it again, and again, until the note rang out clear and sweet.', q: 'What is the main idea?', a: 'practice makes the hard parts better', wrong: ['violins are loud', 'little brothers are annoying', 'high notes are impossible'] },
+    { g: 3, l: 2, text: 'The campsite was deserted when Omar\'s family arrived. Pine needles carpeted the ground, and the only sound was a woodpecker tapping somewhere above.', q: 'What does "deserted" mean?', a: 'empty of people', wrong: ['hot and dry', 'full of sand', 'very noisy'] },
+    { g: 3, l: 2, text: 'Lena noticed the new girl eating alone again. She picked up her tray, walked over, and asked about the dragon book the girl was reading. By Friday they were trading books.', q: 'Why did Lena mention the dragon book?', a: 'to start a friendly conversation', wrong: ['to borrow it', 'because she hates dragons', 'to show off'] },
+    { g: 3, l: 2, text: 'The hikers reached the ridge as the sky turned orange. Below them, the valley filled with shadow. "Worth every step," Theo whispered.', q: 'What does Theo mean by "worth every step"?', a: 'the view made the hard hike worthwhile', wrong: ['the steps were counted', 'he wants to go back down', 'the hike was easy'] },
+    { g: 3, l: 2, text: 'Camels have long eyelashes and can close their nostrils. These features keep out blowing sand. Their wide feet keep them from sinking into dunes.', q: 'What is this passage mostly about?', a: 'how camels are suited to the desert', wrong: ['why camels have long legs', 'how to ride a camel', 'where to find sand dunes'] },
+    { g: 3, l: 2, text: 'Rosa\'s cake came out of the oven flat as a pancake. She checked the recipe and groaned. She had forgotten the baking powder.', q: 'Why was the cake flat?', a: 'she left out the baking powder', wrong: ['the oven was broken', 'she used too much sugar', 'she baked it too long'] },
+    { g: 3, l: 2, text: 'Jaden\'s grandfather speaks three languages. "Each one," he says, "is a window into another world." Jaden has started learning Spanish from him on Saturdays.', q: 'What does Grandfather mean by "a window into another world"?', a: 'a language lets you understand other people and places', wrong: ['you can see through languages', 'languages are made of glass', 'every house needs windows'] },
+    { g: 3, l: 2, text: 'The old oak had stood in the schoolyard for a hundred years. When the storm split it, the students collected its acorns and planted them along the fence.', q: 'Why did the students plant the acorns?', a: 'so new oaks could grow from the old one', wrong: ['to feed the squirrels', 'to clean the yard', 'because the teacher was angry'] },
+    { g: 3, l: 2, text: 'Maya\'s robot kept turning left instead of right. She reread her code line by line. There it was: one tiny minus sign where a plus should be.', q: 'What caused the problem?', a: 'a small mistake in the code', wrong: ['a broken wheel', 'a dead battery', 'the floor was slippery'] },
+    { g: 3, l: 2, text: 'Noah\'s hands shook as he stepped up to the microphone. He took a breath, found his mom\'s face in the crowd, and began. By the second verse, he was smiling.', q: 'How did Noah\'s feelings change?', a: 'from nervous to confident', wrong: ['from happy to sad', 'from bored to tired', 'from angry to calm'] },
+    { g: 3, l: 2, text: 'Some birds, like crows, can use tools. A crow will bend a wire into a hook to pull food out of a tube. Scientists once thought only humans and apes could do this.', q: 'Why is the crow\'s trick surprising to scientists?', a: 'they thought only humans and apes used tools', wrong: ['crows do not eat', 'wires are rare', 'crows cannot see hooks'] },
+    { g: 3, l: 2, text: 'The town pool closes on Labor Day. On the last afternoon, Lily swam until her fingers wrinkled. She climbed out slowly, looking back at the water.', q: 'How does Lily feel about summer ending?', a: 'sad to see it go', wrong: ['glad it is over', 'afraid of the water', 'too cold to care'] },
+    { g: 3, l: 2, text: 'Amir forgot his lines in the school play. For a second the stage was silent. Then Grace, playing the queen, said, "Speak up, knight!" and Amir remembered everything.', q: 'What did Grace do for Amir?', a: 'helped him without making it obvious', wrong: ['laughed at him', 'took his part', 'told the teacher'] },
+    { g: 3, l: 2, text: 'Tomas saved his allowance for a video game. At the store, he saw his sister gazing at a sketchbook she could not afford. He walked out with the sketchbook instead.', q: 'What does Tomas\'s choice tell you about him?', a: 'he is generous', wrong: ['he dislikes video games', 'he is forgetful', 'he is selfish'] },
+    { g: 3, l: 2, text: 'Hana wrote to the mayor about the broken swings at the park. Three weeks later, a crew arrived with new chains and seats. Hana was the first one to swing.', q: 'What is the best title for this passage?', a: 'One Letter Fixed the Park', wrong: ['How Swings Are Made', 'The Mayor\'s Busy Day', 'Hana Learns to Swing'] },
   ];
 
   // ---------- Reading: putting events in order ----------
@@ -134,6 +230,23 @@
 
   const PLANT_PARTS = { roots: ['takes in water from the soil', 'holds the plant in the ground'], stem: ['holds the plant up', 'carries water up to the leaves'],
     leaves: ['makes food from sunlight'], flower: ['makes the seeds'], seed: ['grows into a new plant'] };
+
+  // Animal body parts: part -> [emoji, [jobs]]. Each job belongs to one part only.
+  const BODY_PARTS = {
+    wings: ['🐦', ['does a bird use to fly', 'does a butterfly flap to fly']], fins: ['🐟', ['does a fish use to swim', 'does a shark steer with']],
+    gills: ['🐠', ['does a fish breathe with underwater']], fur: ['🐻', ['keeps a bear warm', 'keeps a rabbit warm in winter']],
+    shell: ['🐢', ['protects a turtle', 'does a snail hide inside']], beak: ['🦜', ['does a bird use to pick up seeds', 'does a woodpecker tap trees with']],
+    trunk: ['🐘', ['does an elephant use to pick up food', 'does an elephant spray water with']], claws: ['🐱', ['does a cat use to climb a tree', 'does an eagle grab fish with']],
+    'long neck': ['🦒', ['does a giraffe use to reach high leaves']], 'strong back legs': ['🦘', ['does a kangaroo use to hop', 'does a frog use to jump']],
+  };
+  // What every living thing needs, and things that are nice but not needed.
+  const NEEDS = { animals: ['food', 'water', 'air', 'a safe place to live'], plants: ['water', 'sunlight', 'air', 'soil'],
+    wants: ['a toy', 'a TV', 'shoes', 'a phone', 'candy', 'a car', 'a hat', 'a book', 'a pillow', 'a bike'] };
+  // Pushes and pulls.
+  const FORCES = { push: [['kicking a ball', '⚽'], ['pressing a doorbell', '🔔'], ['pushing a shopping cart', '🛒'], ['hitting a drum', '🥁'], ['closing a drawer', '🗄️'], ['blowing out a candle', '🕯️']],
+    pull: [['opening a drawer', '🗄️'], ['a tug of war', '🪢'], ['walking a dog on a leash', '🐕'], ['pulling a wagon', '🛒'], ['zipping up a jacket', '🧥'], ['reeling in a fish', '🎣']] };
+  // Moon phases.
+  const MOON = { 'new moon': '🌑', 'crescent moon': '🌙', 'half moon': '🌓', 'full moon': '🌕' };
 
   // ---------- Science: facts ----------
   // { g, l, q, a, wrong: [3] }
@@ -204,12 +317,33 @@
     { g: 3, l: 2, q: 'How long does Earth take to go all the way around the sun?', a: 'one year', wrong: ['one day', 'one month', 'one hour'] },
     { g: 3, l: 2, q: 'What causes day and night?', a: 'the Earth spinning', wrong: ['the sun moving around Earth', 'clouds covering the sun', 'the moon\'s light'] },
     { g: 3, l: 2, q: 'What is the Earth\'s natural satellite?', a: 'the moon', wrong: ['the sun', 'Mars', 'a cloud'] },
+    // Weather and clouds
+    { g: 1, l: 1, q: 'What are clouds made of?', a: 'tiny drops of water', wrong: ['cotton', 'smoke', 'feathers'] },
+    { g: 1, l: 1, q: 'What do we call moving air?', a: 'wind', wrong: ['rain', 'fog', 'thunder'] },
+    { g: 1, l: 2, q: 'What falls from clouds when it is very cold?', a: 'snow', wrong: ['sand', 'leaves', 'bubbles'] },
+    { g: 2, l: 1, q: 'What do dark gray clouds usually mean?', a: 'rain is coming', wrong: ['it will be sunny', 'it is nighttime', 'the wind stopped'] },
+    { g: 2, l: 2, q: 'What is fog?', a: 'a cloud near the ground', wrong: ['frozen rain', 'smoke from fires', 'dust in the air'] },
+    { g: 3, l: 1, q: 'What tool tells which way the wind is blowing?', a: 'a wind vane', wrong: ['a thermometer', 'a ruler', 'a compass'] },
+    { g: 3, l: 2, q: 'What is the water cycle?', a: 'water rising into the air, forming clouds, and falling as rain', wrong: ['water going down a drain', 'a bicycle that floats', 'the way rivers freeze'] },
+    // Rocks and soil
+    { g: 1, l: 2, q: 'What is soil mostly made of?', a: 'tiny bits of rock and dead plants', wrong: ['candy', 'plastic', 'ice'] },
+    { g: 2, l: 1, q: 'Which is the hardest?', a: 'a rock', wrong: ['a sponge', 'a pillow', 'a leaf'] },
+    { g: 2, l: 2, q: 'What is sand made of?', a: 'tiny pieces of rock and shell', wrong: ['sugar', 'salt', 'dried mud'] },
+    { g: 3, l: 1, q: 'What slowly breaks big rocks into smaller pieces?', a: 'wind, water, and ice', wrong: ['sunlight only', 'animals walking', 'loud sounds'] },
+    { g: 3, l: 2, q: 'Which layer of soil is best for growing plants?', a: 'the dark top layer', wrong: ['the rocky bottom layer', 'pure sand', 'clay deep underground'] },
+    // Healthy habits
+    { g: 1, l: 1, q: 'How often should you brush your teeth?', a: 'every day', wrong: ['once a year', 'never', 'only on birthdays'] },
+    { g: 1, l: 2, q: 'Why do we wash our hands?', a: 'to get rid of germs', wrong: ['to make them bigger', 'to keep them cold', 'to make them shiny'] },
+    { g: 2, l: 1, q: 'Which food helps your bones grow strong?', a: 'milk', wrong: ['candy', 'soda', 'chips'] },
+    { g: 2, l: 2, q: 'Why does your body need sleep?', a: 'to rest and grow', wrong: ['to get taller only', 'to stay hungry', 'to practice dreams'] },
+    { g: 3, l: 1, q: 'Why should you drink water when you exercise?', a: 'your body loses water when you sweat', wrong: ['water makes you faster', 'to wash your mouth', 'water gives you muscles'] },
+    { g: 3, l: 2, q: 'What does your heart do when you run?', a: 'beats faster to send more blood to your muscles', wrong: ['stops for a while', 'gets smaller', 'beats slower'] },
   ];
 
   // Names that take no 'a'/'an' in front (mass nouns and phrases).
   const NO_ARTICLE = ['milk', 'juice', 'honey', 'rain', 'hot tea', 'ocean water', 'steam', 'the air in a balloon', 'the air we breathe', 'the air inside a bubble', 'grass'];
 
-  const api = { NO_ARTICLE, HABITAT_ALIKE, PASSAGES, SEQUENCES, ANIMALS, GROUPS, LIVING, MATTER, SENSES, HABITATS, LIFECYCLES, PLANT_PARTS, FACTS };
+  const api = { NO_ARTICLE, HABITAT_ALIKE, BODY_PARTS, NEEDS, FORCES, MOON, PASSAGES, SEQUENCES, ANIMALS, GROUPS, LIVING, MATTER, SENSES, HABITATS, LIFECYCLES, PLANT_PARTS, FACTS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Lessons = api;
 })(this);
