@@ -1,7 +1,7 @@
 // Service worker: keeps the game's own files on the device so the quiz works offline
 // and opens instantly. The page is fetched network-first so updates still arrive;
 // the cached copy is used only when the network fails. Videos always need a connection.
-const CACHE = 'star-steps-v2';
+const CACHE = 'star-steps-v3';
 const SHELL = ['./', './index.html', './questions.js', './lessons.js', './icon.png', './icon-192.png', './icon-512.png', './manifest.webmanifest'];
 
 self.addEventListener('install', e => {
