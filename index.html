@@ -57,16 +57,22 @@
   .tag { font-size: 26px; margin: 10px 0 0; font-weight: 500; }
   .bank { display: inline-flex; gap: 8px; align-items: center; background: #fff; border-radius: 999px;
     padding: 8px 18px; font-size: 22px; font-weight: 600; margin-top: 14px; box-shadow: 0 4px 0 rgba(0,0,0,.1); }
-  .subjects { display: flex; gap: 22px; margin-top: 4vh; flex-wrap: wrap; justify-content: center; max-width: 720px; }
+  .subjects { display: flex; gap: 18px; margin-top: 3vh; flex-wrap: wrap; justify-content: center; max-width: 760px; width: 100%; }
   .subject { width: 200px; height: 200px; font-size: 30px; font-weight: 700; color: #fff; display: flex;
     flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
   .subject .em { font-size: 84px; line-height: 1; }
-  .subject:nth-child(1) { background: var(--orange); transform: rotate(-3deg); }
-  .subject:nth-child(2) { background: var(--pink); transform: rotate(2deg); }
-  .subject:nth-child(3) { background: var(--teal); transform: rotate(-1deg); }
-  .subject:nth-child(4) { background: var(--green); transform: rotate(2deg); }
-  .subject:nth-child(5) { background: var(--purple); transform: rotate(-2deg); }
-  .subject:nth-child(6) { background: var(--blue); transform: rotate(1deg); }
+  .subject.main { flex: 0 0 100%; height: 170px; flex-direction: row; gap: 24px; font-size: 48px; background: var(--purple);
+    transform: none; animation: wiggle 3s ease-in-out infinite; box-shadow: 0 10px 0 rgba(0,0,0,.18), 0 0 0 6px rgba(255,255,255,.6); }
+  .subject.main .em { font-size: 110px; }
+  @keyframes wiggle { 0%, 100% { transform: rotate(-1deg) scale(1); } 50% { transform: rotate(1deg) scale(1.03); } }
+  .subject.main:active { animation: none; transform: translateY(6px); }
+  .subject:not(.main) { width: 130px; height: 140px; font-size: 22px; }
+  .subject:not(.main) .em { font-size: 58px; }
+  .subject[data-k=math] { background: var(--orange); transform: rotate(-3deg); }
+  .subject[data-k=phonics] { background: var(--pink); transform: rotate(2deg); }
+  .subject[data-k=reading] { background: var(--teal); transform: rotate(-1deg); }
+  .subject[data-k=science] { background: var(--green); transform: rotate(2deg); }
+  .subject[data-k=chores] { background: var(--blue); transform: rotate(1deg); }
   .note { font-size: 20px; background: rgba(255,255,255,.8); padding: 12px 20px; border-radius: 16px; margin-top: 4vh; max-width: 640px; text-align: center; }
   .note:empty { display: none; }
   .install { display: flex; gap: 14px; align-items: center; background: #fff; border-radius: 22px; padding: 12px 16px; margin-top: 16px;
@@ -252,7 +258,8 @@
   .hidden { display: none !important; }
 
   @media (max-width: 700px) {
-    .subject { width: 160px; height: 160px; font-size: 26px; } .subject .em { font-size: 64px; }
+    .subject:not(.main) { width: 120px; height: 120px; font-size: 20px; } .subject:not(.main) .em { font-size: 48px; }
+    .subject.main { height: 130px; font-size: 36px; } .subject.main .em { font-size: 80px; }
     .ans { height: 100px; font-size: 48px; } .ans.word { font-size: 38px; }
     .pic { font-size: 110px; } .count { font-size: 42px; } .prompt { font-size: 26px; }
     .videos { gap: 14px; } .vid span { font-size: 16px; }
@@ -594,11 +601,12 @@ function renderHome() {
   if (S.phonics) opts.push(['phonics', '🔤', 'Letters']);
   if (S.reading) opts.push(['reading', '📖', 'Reading']);
   if (S.science) opts.push(['science', '🔬', 'Science']);
-  if (opts.length > 1) opts.push(['mix', '🎲', 'Mix it up']);
+  if (opts.length > 1) opts.unshift(['mix', '🎲', 'Mix it up!']);
   if (S.choresOn) opts.push(['chores', '🧹', 'Chores']);
   for (const [k, em, label] of opts) {
     const b = document.createElement('button');
-    b.className = 'subject chunky';
+    b.className = 'subject chunky' + (k === 'mix' ? ' main' : '');
+    b.dataset.k = k;
     b.innerHTML = `<span class="em">${em}</span>${label}`;
     b.onclick = () => k === 'chores' ? openChores() : startQuiz(k);
     box.append(b);
