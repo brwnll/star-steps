@@ -4,6 +4,7 @@
 //   n: the numbers the question was built from, so test-questions.js can re-check the answer independently.
 // Run `node test-questions.js` to check thousands of generated questions.
 (function (root) {
+  const Lessons = typeof require !== 'undefined' ? require('./lessons.js') : root.Lessons;
   const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const pickN = (arr, n) => shuffle(arr).slice(0, n);
@@ -572,6 +573,83 @@
     syllable: () => phonics2.syllable(),
   };
 
+  // ---------- Reading ----------
+  const passageHtml = t => `<div class="passage">${esc(t)}</div>`;
+  const reading = {
+    passage(grade, level) {
+      const item = pick(Lessons.PASSAGES.filter(x => x.g === grade && x.l === level));
+      return { key: `pass${item.text.slice(0, 20)}`, visual: passageHtml(item.text), text: item.q, say: `${item.text} ${item.q}`,
+        choices: shuffle([item.a, ...item.wrong]), answer: item.a, choiceClass: 'word', item };
+    },
+    order(grade, level) {
+      const item = pick(Lessons.SEQUENCES.filter(x => x.g === grade)), steps = item.steps;
+      let ask, ans, idx;
+      if (level === 1 || steps.length === 3 && Math.random() < 0.4) {
+        const first = Math.random() < 0.5; ask = `What happens ${first ? 'FIRST' : 'LAST'}?`; idx = first ? 0 : steps.length - 1; ans = steps[idx];
+      } else {
+        idx = rand(1, steps.length - 1); ans = steps[idx]; ask = `What happens right after “${steps[idx - 1]}”?`;
+      }
+      const shown = shuffle(steps);
+      return { key: `order${steps[0]}${idx}`, visual: `<div class="passage"><b>Put these in order:</b><br>${shown.map(esc).join('<br>')}</div>`,
+        text: ask, say: `Here are some things that happen: ${shown.join('. ')}. ${ask.replace(/[“”]/g, '')}`,
+        choices: shuffle(steps), answer: ans, choiceClass: 'word', item, idx };
+    },
+  };
+
+  // ---------- Science ----------
+  // 'a' or 'an'; names in lessons.js that already start with a word like 'the' or 'milk' are marked uncountable there.
+  const art = n => Lessons.NO_ARTICLE.includes(n) ? n : (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n;
+  const picHtml = (emoji, label) => `<div class="pic">${emoji}</div><div class="caption">${esc(label)}</div>`;
+  const science = {
+    group(grade) {
+      const groups = Lessons.GROUPS[grade];
+      const names = Object.keys(Lessons.ANIMALS).filter(a => Lessons.ANIMALS[a][2] <= grade && groups.includes(Lessons.ANIMALS[a][1]));
+      const name = pick(names), [emoji, ans] = Lessons.ANIMALS[name];
+      return { key: `group${name}`, visual: picHtml(emoji, name), text: `What kind of animal is ${art(name)}?`, say: `What kind of animal is ${art(name)}?`,
+        choices: wordChoices(ans, groups), answer: ans, choiceClass: 'word', name };
+    },
+    living() {
+      const ans = pick(['living', 'non-living']), [name, emoji] = pick(Lessons.LIVING[ans]);
+      return { key: `living${name}`, visual: picHtml(emoji, name), text: `Is ${art(name)} living or non-living?`, say: `Is ${art(name)} living or non-living?`,
+        choices: shuffle(['living', 'non-living']), answer: ans, choiceClass: 'word', name };
+    },
+    matter(grade) {
+      const states = grade === 1 ? ['solid', 'liquid'] : ['solid', 'liquid', 'gas'];
+      const ans = pick(states), [name, emoji] = pick(Lessons.MATTER[ans]);
+      const ask = `Is ${art(name)} a ${states.join(', a ').replace(/, a (\w+)$/, ' or a $1')}?`;
+      return { key: `matter${name}`, visual: picHtml(emoji, name), text: ask, say: ask,
+        choices: shuffle(states), answer: ans, choiceClass: 'word', name };
+    },
+    sense() {
+      const ans = pick(Object.keys(Lessons.SENSES)), [emoji, acts] = Lessons.SENSES[ans], act = pick(acts);
+      return { key: `sense${act}`, visual: `<div class="pic">🤔</div>`, text: `Which sense do you use to ${act}?`, say: `Which sense do you use to ${act}?`,
+        choices: wordChoices(ans, Object.keys(Lessons.SENSES)), answer: ans, choiceClass: 'word', act };
+    },
+    habitat() {
+      const ans = pick(Object.keys(Lessons.HABITATS)), [, animals] = Lessons.HABITATS[ans], [name, emoji] = pick(animals);
+      return { key: `hab${name}`, visual: picHtml(emoji, name), text: `Where does ${art(name)} live?`, say: `Where does ${art(name)} live?`,
+        choices: wordChoices(ans, Object.keys(Lessons.HABITATS)), answer: ans, choiceClass: 'word', name };
+    },
+    lifecycle(grade, level) {
+      const name = pick(Object.keys(Lessons.LIFECYCLES)), [emoji, stages] = Lessons.LIFECYCLES[name];
+      let idx, ask;
+      if (level === 1 && Math.random() < 0.5) { idx = 0; ask = `What comes FIRST in the life of a ${name}?`; }
+      else { idx = rand(1, stages.length - 1); ask = `What comes right after the ${stages[idx - 1]}?`; }
+      const ans = stages[idx];
+      return { key: `life${name}${idx}`, visual: picHtml(emoji, `life of a ${name}`), text: ask, say: ask,
+        choices: shuffle(stages), answer: ans, choiceClass: 'word', name, idx };
+    },
+    plantpart() {
+      const ans = pick(Object.keys(Lessons.PLANT_PARTS)), job = pick(Lessons.PLANT_PARTS[ans]);
+      return { key: `plant${job}`, visual: picHtml('🌻', 'plant'), text: `Which part of a plant ${job}?`, say: `Which part of a plant ${job}?`, choices: wordChoices(ans, Object.keys(Lessons.PLANT_PARTS)), answer: ans, choiceClass: 'word', job };
+    },
+    fact(grade, level) {
+      const item = pick(Lessons.FACTS.filter(x => x.g === grade && x.l === level));
+      return { key: `fact${item.q.slice(0, 24)}`, visual: `<div class="pic">🔬</div>`, text: item.q, say: item.q,
+        choices: shuffle([item.a, ...item.wrong]), answer: item.a, choiceClass: 'word', item };
+    },
+  };
+
   // Which question types each grade and level serves. Level 2 adds the harder ones.
   const MIX = {
     math: {
@@ -579,30 +657,46 @@
       2: { 1: ['add', 'sub', 'skip', 'place', 'evenodd', 'compare', 'clock', 'story', 'story', 'array'], 2: ['add', 'sub', 'skip', 'place', 'clock', 'money', 'evenodd', 'story', 'story', 'array'] },
       3: { 1: ['mult', 'mult', 'div', 'add', 'round', 'fraction', 'clock', 'area', 'cmpfrac'], 2: ['mult', 'div', 'factor', 'add', 'sub', 'round', 'fraction', 'clock', 'area', 'cmpfrac'] },
     },
+    reading: {
+      1: { 1: ['passage', 'passage', 'passage', 'order'], 2: ['passage', 'passage', 'passage', 'order'] },
+      2: { 1: ['passage', 'passage', 'passage', 'order'], 2: ['passage', 'passage', 'passage', 'order'] },
+      3: { 1: ['passage', 'passage', 'passage', 'order'], 2: ['passage', 'passage', 'passage', 'order'] },
+    },
+    science: {
+      1: { 1: ['living', 'living', 'group', 'sense', 'matter', 'fact', 'fact'], 2: ['living', 'group', 'sense', 'matter', 'habitat', 'lifecycle', 'plantpart', 'fact', 'fact'] },
+      2: { 1: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'sense', 'fact', 'fact'], 2: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'fact', 'fact', 'fact'] },
+      3: { 1: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'plantpart'], 2: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'matter'] },
+    },
     phonics: {
       1: { 1: ['begin', 'begin', 'begin', 'sight', 'sight', 'cvc'], 2: ['begin', 'begin', 'cvc', 'cvc', 'rhyme', 'sight', 'sight'] },
       2: { 1: ['blend', 'blend', 'longvowel', 'sight', 'syllable', 'compound'], 2: ['blend', 'longvowel', 'plural', 'plural', 'compound', 'contraction', 'sight', 'syllable'] },
       3: { 1: ['antonym', 'synonym', 'spelling', 'spelling', 'sight', 'syllable', 'past'], 2: ['antonym', 'synonym', 'spelling', 'prefix', 'past', 'irregular', 'homophone', 'homophone'] },
     },
   };
-  const GENERATORS = { math: { 1: math1, 2: math2, 3: math3 }, phonics: { 1: phonics1, 2: phonics2, 3: phonics3 } };
+  const GENERATORS = { math: { 1: math1, 2: math2, 3: math3 }, phonics: { 1: phonics1, 2: phonics2, 3: phonics3 },
+    reading: { 1: reading, 2: reading, 3: reading }, science: { 1: science, 2: science, 3: science } };
   const LEVEL_NAMES = {
     math: { 1: ['Numbers up to 10', 'Numbers up to 20'], 2: ['Adding without carrying & skip counting', 'Carrying, time & money'], 3: ['Easy times tables & fractions', 'All times tables & dividing'] },
     phonics: { 1: ['Letters & sounds', 'Words & rhymes'], 2: ['Blends & long vowels', 'Plurals & compound words'], 3: ['Opposites & spelling', 'Prefixes & past tense'] },
+    reading: { 1: ['Short stories', 'Longer stories & why'], 2: ['Stories & facts', 'Reading between the lines'], 3: ['Longer passages', 'Main ideas & word meanings'] },
+    science: { 1: ['Living things & senses', 'Habitats & life cycles'], 2: ['Animals, matter & plants', 'Earth, space & weather'], 3: ['Forces, energy & living things', 'Earth, space & changes'] },
   };
+  const SUBJECTS = ['math', 'phonics', 'reading', 'science'];
 
-  // subject: 'math' | 'phonics' | 'mix'.  opts.grade: 1-3.  opts.mathLevel / opts.phonicsLevel: 1 or 2.
+  // subject: one of SUBJECTS, or 'mix' (a random one of opts.subjects, default all).
+  // opts.grade: 1-3.  opts.mathLevel / phonicsLevel / readingLevel / scienceLevel: 1 or 2.
   function generate(subject, opts = {}) {
     const grade = [1, 2, 3].includes(opts.grade) ? opts.grade : 1;
-    const s = subject === 'mix' ? (Math.random() < 0.5 ? 'math' : 'phonics') : subject;
-    const level = (s === 'math' ? opts.mathLevel : opts.phonicsLevel) === 2 ? 2 : 1;
+    const pool = (opts.subjects || SUBJECTS).filter(x => SUBJECTS.includes(x));
+    const s = subject === 'mix' ? pick(pool.length ? pool : SUBJECTS) : subject;
+    const level = opts[`${s}Level`] === 2 ? 2 : 1;
     const type = pick(MIX[s][grade][level]);
-    const arg = s === 'math' && grade === 1 ? (level === 2 ? 20 : 10) : level;
-    const q = GENERATORS[s][grade][type](arg);
+    const q = s === 'reading' || s === 'science' ? GENERATORS[s][grade][type](grade, level)
+      : GENERATORS[s][grade][type](s === 'math' && grade === 1 ? (level === 2 ? 20 : 10) : level);
     return Object.assign(q, { subject: s, grade, level, type, key: `g${grade}${q.key}` });
   }
 
-  const api = { generate, LEVEL_NAMES, MIX, data: { PICS, CVC, RHYMES, SIGHT, LETTERS, SAME_SOUND, COINS, STORIES, BLENDS, LONG, PLURALS, COMPOUNDS,
+  const api = { generate, LEVEL_NAMES, MIX, SUBJECTS, data: { PICS, CVC, RHYMES, SIGHT, LETTERS, SAME_SOUND, COINS, STORIES, BLENDS, LONG, PLURALS, COMPOUNDS,
     CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES, SOUND_ALIKE } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Questions = api;

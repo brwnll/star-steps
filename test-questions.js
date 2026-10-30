@@ -1,6 +1,7 @@
 // Generates lots of questions for every grade and level and checks each one is correct and fair.
 // Usage: node test-questions.js [count]
-const { generate, data, MIX } = require('./questions.js');
+const { generate, data, MIX, SUBJECTS } = require('./questions.js');
+const Lessons = require('./lessons.js');
 const N = Number(process.argv[2]) || 100000;
 
 const errors = [];
@@ -31,19 +32,37 @@ for (const [a, b] of data.COMPOUNDS) if (!a || !b) errors.push('Bad compound');
 for (const [right, wrongs] of Object.entries(data.SPELLING)) if (wrongs.includes(right)) errors.push(`Misspelling list for ${right} includes the right spelling`);
 
 // ---- Generate and check ----
+// Hand-written lessons: every item has one answer plus three different wrong ones, and covers every grade/level.
+for (const [name, list] of [['PASSAGES', Lessons.PASSAGES], ['FACTS', Lessons.FACTS]]) {
+  for (const it of list) {
+    const all = [it.a, ...it.wrong];
+    if (it.wrong.length !== 3 || new Set(all.map(x => x.toLowerCase())).size !== 4) errors.push(`${name}: bad choices for "${it.q}"`);
+    if (![1, 2, 3].includes(it.g) || ![1, 2].includes(it.l)) errors.push(`${name}: bad grade/level for "${it.q}"`);
+  }
+  for (const g of [1, 2, 3]) for (const l of [1, 2]) if (list.filter(x => x.g === g && x.l === l).length < 8) errors.push(`${name}: fewer than 8 items for grade ${g} level ${l}`);
+}
+for (const [name, [emoji, group, minGrade]] of Object.entries(Lessons.ANIMALS)) if (!emoji || !Lessons.GROUPS[3].includes(group) || ![1, 2, 3].includes(minGrade)) errors.push(`ANIMALS: bad entry ${name}`);
+for (const seq of Lessons.SEQUENCES) if (new Set(seq.steps).size !== seq.steps.length || seq.steps.length < 3) errors.push(`SEQUENCES: bad steps ${seq.steps}`);
+const habitatAnimals = Object.values(Lessons.HABITATS).flatMap(h => h[1].map(a => a[0]));
+if (new Set(habitatAnimals).size !== habitatAnimals.length) errors.push('HABITATS: an animal is listed in two habitats');
+const matterItems = Object.values(Lessons.MATTER).flat().map(x => x[0]);
+if (new Set(matterItems).size !== matterItems.length) errors.push('MATTER: an item is listed in two states');
+
 for (let i = 0; i < N; i++) {
-  const subject = ['math', 'phonics', 'mix'][i % 3];
-  const grade = 1 + (Math.floor(i / 3) % 3);
-  const level = Math.floor(i / 9) % 2 + 1;
-  const q = generate(subject, { grade, mathLevel: level, phonicsLevel: level });
+  const subject = ['math', 'phonics', 'reading', 'science', 'mix'][i % 5];
+  const grade = 1 + (Math.floor(i / 5) % 3);
+  const level = Math.floor(i / 15) % 2 + 1;
+  const q = generate(subject, { grade, mathLevel: level, phonicsLevel: level, readingLevel: level, scienceLevel: level });
+  if (subject !== 'mix' && q.subject !== subject) fail(q, 'Wrong subject');
   keys.add(q.key); typesSeen.add(`${q.subject}${q.grade}.${q.type}`);
   const { choices, answer, n } = q;
 
   // Shared rules
   if (new Set(choices.map(String)).size !== choices.length) fail(q, 'Duplicate choices');
   if (choices.filter(c => c === answer).length !== 1) fail(q, 'Answer not in choices exactly once');
-  const want = ['compare', 'evenodd', 'homophone', 'cmpfrac'].includes(q.type) ? 2 : 4;
-  if (choices.length !== want) fail(q, `Expected ${want} choices`);
+  const want = ['compare', 'evenodd', 'homophone', 'cmpfrac', 'living'].includes(q.type) ? 2
+    : q.type === 'matter' ? (grade === 1 ? 2 : 3) : ['order', 'lifecycle'].includes(q.type) ? q.choices.length : 4;
+  if (choices.length !== want || (['order', 'lifecycle'].includes(q.type) && (choices.length < 3 || choices.length > 4))) fail(q, `Expected ${want} choices`);
   if (!q.say || !q.text || !q.visual) fail(q, 'Missing text');
   if (q.grade !== grade || q.level !== level) fail(q, 'Wrong grade/level tag');
   if (!MIX[q.subject][grade][level].includes(q.type)) fail(q, 'Type not allowed at this grade/level');
@@ -109,6 +128,37 @@ for (let i = 0; i < N; i++) {
       default: fail(q, 'Unknown math type');
     }
     if (choices.some(c => typeof c === 'number' && (c < 0 || !Number.isInteger(c)))) fail(q, 'Bad number choice');
+  } else if (q.subject === 'reading') {
+    switch (q.type) {
+      case 'passage': { const it = q.item;
+        if (!Lessons.PASSAGES.includes(it) || it.g !== grade || it.l !== level || answer !== it.a || !q.say.startsWith(it.text)) fail(q, 'Passage wrong');
+        if (choices.some(c => c !== answer && !it.wrong.includes(c))) fail(q, 'Passage distractor not from item'); break; }
+      case 'order': { const st = q.item.steps;
+        if (q.item.g !== grade || st[q.idx] !== answer) fail(q, 'Order answer wrong');
+        if (q.text.includes('FIRST') && q.idx !== 0) fail(q, 'FIRST is not the first step');
+        if (q.text.includes('LAST') && q.idx !== st.length - 1) fail(q, 'LAST is not the last step');
+        const m = q.text.match(/after “(.+)”/); if (m && st[q.idx - 1] !== m[1]) fail(q, 'After-step mismatch');
+        if (level === 1 && m) fail(q, 'Level 1 should only ask first/last'); break; }
+      default: fail(q, 'Unknown reading type');
+    }
+  } else if (q.subject === 'science') {
+    switch (q.type) {
+      case 'fact': { const it = q.item;
+        if (!Lessons.FACTS.includes(it) || it.g !== grade || it.l !== level || answer !== it.a || q.text !== it.q) fail(q, 'Fact wrong'); break; }
+      case 'group': { const a = Lessons.ANIMALS[q.name];
+        if (!a || a[1] !== answer || a[2] > grade || choices.some(c => !Lessons.GROUPS[grade].includes(c))) fail(q, 'Animal group wrong'); break; }
+      case 'living': if (!Lessons.LIVING[answer].some(x => x[0] === q.name)) fail(q, 'Living wrong'); break;
+      case 'matter': if (!Lessons.MATTER[answer].some(x => x[0] === q.name) || (grade === 1 && choices.includes('gas'))) fail(q, 'Matter wrong'); break;
+      case 'sense': if (!Lessons.SENSES[answer][1].includes(q.act)) fail(q, 'Sense wrong'); break;
+      case 'habitat': if (!Lessons.HABITATS[answer][1].some(x => x[0] === q.name)) fail(q, 'Habitat wrong'); break;
+      case 'lifecycle': { const st = Lessons.LIFECYCLES[q.name][1];
+        if (st[q.idx] !== answer || new Set(choices).size !== st.length) fail(q, 'Life cycle wrong');
+        const m = q.text.match(/after the (.+)\?/); if (m && st[q.idx - 1] !== m[1]) fail(q, 'Life cycle step mismatch');
+        if (q.text.includes('FIRST') && q.idx !== 0) fail(q, 'Life cycle FIRST wrong'); break; }
+      case 'plantpart': if (!Lessons.PLANT_PARTS[answer].includes(q.job)) fail(q, 'Plant part wrong'); break;
+      default: fail(q, 'Unknown science type');
+    }
+    if (/\b(a|an) (a|an|the|milk|juice|honey|rain|steam|smoke|grass)\b/.test(q.text) || /\ba [aeiou]/.test(q.text.replace(/a unit/g, ''))) fail(q, 'Article grammar');
   } else {
     switch (q.type) {
       case 'begin': {
@@ -161,10 +211,10 @@ for (let i = 0; i < N; i++) {
 }
 
 // Every type in every grade/level mix must have come up.
-for (const sub of ['math', 'phonics']) for (const g of [1, 2, 3]) for (const l of [1, 2])
+for (const sub of SUBJECTS) for (const g of [1, 2, 3]) for (const l of [1, 2])
   for (const t of new Set(MIX[sub][g][l])) if (!typesSeen.has(`${sub}${g}.${t}`)) errors.push(`Never generated ${sub} grade ${g} ${t}`);
 
-console.log(`Checked ${N.toLocaleString()} questions across 3 grades: ${keys.size.toLocaleString()} different ones, ${typesSeen.size} question types.`);
+console.log(`Checked ${N.toLocaleString()} questions across ${SUBJECTS.length} subjects and 3 grades: ${keys.size.toLocaleString()} different ones, ${typesSeen.size} question types.`);
 if (errors.length) {
   console.log(`\n❌ ${errors.length} problem(s):\n` + errors.join('\n'));
   process.exit(1);

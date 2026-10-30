@@ -56,13 +56,15 @@
   .tag { font-size: 26px; margin: 10px 0 0; font-weight: 500; }
   .bank { display: inline-flex; gap: 8px; align-items: center; background: #fff; border-radius: 999px;
     padding: 8px 18px; font-size: 22px; font-weight: 600; margin-top: 14px; box-shadow: 0 4px 0 rgba(0,0,0,.1); }
-  .subjects { display: flex; gap: 28px; margin-top: 5vh; flex-wrap: wrap; justify-content: center; }
-  .subject { width: 230px; height: 230px; font-size: 34px; font-weight: 700; color: #fff; display: flex;
+  .subjects { display: flex; gap: 22px; margin-top: 4vh; flex-wrap: wrap; justify-content: center; max-width: 720px; }
+  .subject { width: 200px; height: 200px; font-size: 30px; font-weight: 700; color: #fff; display: flex;
     flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
-  .subject .em { font-size: 96px; line-height: 1; }
+  .subject .em { font-size: 84px; line-height: 1; }
   .subject:nth-child(1) { background: var(--orange); transform: rotate(-3deg); }
   .subject:nth-child(2) { background: var(--pink); transform: rotate(2deg); }
   .subject:nth-child(3) { background: var(--teal); transform: rotate(-1deg); }
+  .subject:nth-child(4) { background: var(--green); transform: rotate(2deg); }
+  .subject:nth-child(5) { background: var(--purple); transform: rotate(-2deg); }
   .note { font-size: 20px; background: rgba(255,255,255,.8); padding: 12px 20px; border-radius: 16px; margin-top: 4vh; max-width: 640px; text-align: center; }
   .note:empty { display: none; }
 
@@ -106,6 +108,8 @@
   .visual svg.area { width: auto; max-width: 100%; }
   .story { font-size: clamp(26px, 3.6vw, 36px); font-weight: 600; line-height: 1.35; text-align: left; padding: 0 12px; max-width: 700px; }
   .story .em { font-size: 64px; display: block; text-align: center; margin-bottom: 8px; }
+  .passage { font-size: clamp(22px, 3.2vw, 32px); font-weight: 500; line-height: 1.45; text-align: left; padding: 0 12px; max-width: 760px; }
+  .caption { font-size: 28px; font-weight: 600; color: var(--purple); margin-top: -6px; }
   .pair { display: flex; gap: 40px; align-items: center; justify-content: center; }
   .pair svg { width: 170px; height: 170px; display: block; }
   .pair b { display: block; text-align: center; font-size: 36px; margin-top: 6px; }
@@ -171,7 +175,7 @@
   .field { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 0; border-top: 1px solid #eee; font-size: 18px; }
   .field:first-of-type { border-top: 0; }
   .field select, .field input[type=number] { font: inherit; font-size: 18px; padding: 8px 12px; border-radius: 12px; border: 2px solid #ddd; background: #fff; }
-  .field input[type=checkbox] { width: 28px; height: 28px; accent-color: var(--purple); }
+  .field input[type=checkbox] { width: 28px; height: 28px; accent-color: var(--purple); vertical-align: middle; margin-left: 10px; }
   .pinput { width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 14px; border: 2px solid #ddd; }
   textarea.pinput { min-height: 90px; resize: vertical; }
   .pbtn { font-size: 18px; font-weight: 600; padding: 12px 20px; border-radius: 14px; background: var(--purple); color: #fff; margin-top: 10px; }
@@ -308,12 +312,10 @@
         <label class="field">Grade
           <select data-k="grade" data-num><option value="1">1st grade</option><option value="2">2nd grade</option><option value="3">3rd grade</option></select></label>
         <p class="help" id="gradeInfo"></p>
-        <label class="field">Math questions <input type="checkbox" data-k="math"></label>
-        <label class="field">Phonics questions <input type="checkbox" data-k="phonics"></label>
-        <label class="field">Math level
-          <select data-k="mathLevel"><option value="auto">Grows with your child</option><option value="1"></option><option value="2"></option></select></label>
-        <label class="field">Phonics level
-          <select data-k="phonicsLevel"><option value="auto">Grows with your child</option><option value="1"></option><option value="2"></option></select></label>
+        <label class="field">🔢 Math <span><select data-k="mathLevel"><option value="auto">Grows with your child</option><option value="1"></option><option value="2"></option></select> <input type="checkbox" data-k="math"></span></label>
+        <label class="field">🔤 Phonics <span><select data-k="phonicsLevel"><option value="auto">Grows with your child</option><option value="1"></option><option value="2"></option></select> <input type="checkbox" data-k="phonics"></span></label>
+        <label class="field">📖 Reading <span><select data-k="readingLevel"><option value="auto">Grows with your child</option><option value="1"></option><option value="2"></option></select> <input type="checkbox" data-k="reading"></span></label>
+        <label class="field">🔬 Science <span><select data-k="scienceLevel"><option value="auto">Grows with your child</option><option value="1"></option><option value="2"></option></select> <input type="checkbox" data-k="science"></span></label>
         <p class="help" id="levelInfo"></p>
         <label class="field">Correct answers needed before a video
           <select data-k="goal" data-num>
@@ -397,7 +399,8 @@
   </div>
 </section>
 
-<script src="questions.js?v=5"></script>
+<script src="lessons.js?v=1"></script>
+<script src="questions.js?v=6"></script>
 <script>
 // ---------- Storage ----------
 const $ = s => document.querySelector(s);
@@ -405,7 +408,7 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, grade: 1, mathLevel: 'auto', phonicsLevel: 'auto', goal: 5,
+const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, grade: 1, reading: true, science: true, mathLevel: 'auto', phonicsLevel: 'auto', readingLevel: 'auto', scienceLevel: 'auto', goal: 5,
   secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, voice: '', kidsOnly: false };
 const S = Object.assign({}, DEFAULTS, store.get('ss.settings', {}));
 if (S.mathLevel == 10) S.mathLevel = '1'; else if (S.mathLevel == 20) S.mathLevel = '2';
@@ -500,7 +503,9 @@ function renderHome() {
   const opts = [];
   if (S.math) opts.push(['math', '🔢', 'Numbers']);
   if (S.phonics) opts.push(['phonics', '🔤', 'Letters']);
-  if (S.math && S.phonics) opts.push(['mix', '🎲', 'Mix it up']);
+  if (S.reading) opts.push(['reading', '📖', 'Reading']);
+  if (S.science) opts.push(['science', '🔬', 'Science']);
+  if (opts.length > 1) opts.push(['mix', '🎲', 'Mix it up']);
   for (const [k, em, label] of opts) {
     const b = document.createElement('button');
     b.className = 'subject chunky';
@@ -514,27 +519,29 @@ function renderHome() {
   let note = '';
   if (!videoPool().length) note = 'Grown-ups: tap ⚙️ to add YouTube channels or videos.';
   else if (dailyLeft() <= 0) note = 'No more videos today, but you can still play and learn! 🌈';
-  if (!opts.length) note = 'Grown-ups: tap ⚙️ and turn on Math or Phonics.';
+  if (!opts.length) note = 'Grown-ups: tap ⚙️ and turn on a subject.';
   $('#homeNote').textContent = note;
 }
 
 const GRADE_INFO = {
-  1: 'Math: adding and taking away to 20, doubles, ten frames, counting, bigger/smaller, telling time to the half hour. Reading: letter sounds, short words, rhymes, sight words.',
-  2: 'Math: adding and subtracting to 100, word problems, rows and columns, skip counting, tens and ones, even/odd, time to 5 minutes, counting coins. Reading: blends like sh/ch/tr, long vowels, plurals, compound words, contractions, syllables.',
-  3: 'Math: times tables and division, adding and subtracting to 1,000, rounding, fractions and comparing them, area and perimeter, time to the minute. Reading: opposites and synonyms, spelling, prefixes, past tense, irregular plurals, homophones.',
+  1: 'Math: adding and taking away to 20, doubles, ten frames, counting, bigger/smaller, telling time to the half hour. Phonics: letter sounds, short words, rhymes, sight words. Reading: two-sentence stories, what happened first. Science: living things, animal groups, senses, solid or liquid, seasons.',
+  2: 'Math: adding and subtracting to 100, word problems, rows and columns, skip counting, tens and ones, even/odd, time to 5 minutes, counting coins. Phonics: blends like sh/ch/tr, long vowels, plurals, compound words, contractions, syllables. Reading: short passages, why and how questions, word meanings. Science: habitats, life cycles, states of matter, plant parts, the solar system.',
+  3: 'Math: times tables and division, adding and subtracting to 1,000, rounding, fractions and comparing them, area and perimeter, time to the minute. Phonics: opposites and synonyms, spelling, prefixes, past tense, irregular plurals, homophones. Reading: longer passages, main ideas, feelings and reasons. Science: forces, energy, food chains, fossils, Earth and space.',
 };
 // ---------- Levels ----------
 // Each subject has a level that can grow with the child when the parent picks "Grows with your child".
 // recent: last answers per subject (1 = right first try, 0 = missed), used to move up or down.
-const LEVELS = { math: [1, 2], phonics: [1, 2] };
+const SUBJECTS = Questions.SUBJECTS;
+const LEVELS = Object.fromEntries(SUBJECTS.map(s => [s, [1, 2]]));
 const levelName = (sub, lvl) => Questions.LEVEL_NAMES[sub][S.grade][lvl - 1];
 const getLevels = () => {
-  const L = Object.assign({ math: 1, phonics: 1, recent: { math: [], phonics: [] } }, store.get('ss.levels', {}));
+  const L = Object.assign({ math: 1, phonics: 1, reading: 1, science: 1 }, store.get('ss.levels', {}));
+  L.recent = Object.assign({ math: [], phonics: [], reading: [], science: [] }, L.recent || {});
   if (L.math > 2) L.math = L.math === 20 ? 2 : 1; // older saves used 10/20 for grade 1
   return L;
 };
 function levelFor(sub) {
-  const setting = sub === 'math' ? S.mathLevel : S.phonicsLevel;
+  const setting = S[`${sub}Level`];
   return setting === 'auto' ? getLevels()[sub] : Number(setting) === 2 ? 2 : 1;
 }
 // Records an answer and returns the new level when it changed, else null.
@@ -548,7 +555,7 @@ function recordAnswer(sub, right) {
     if (changed) L.recent[sub] = [];
   }
   store.set('ss.levels', L);
-  const auto = (sub === 'math' ? S.mathLevel : S.phonicsLevel) === 'auto';
+  const auto = S[`${sub}Level`] === 'auto';
   return auto ? changed : null;
 }
 
@@ -587,7 +594,9 @@ function renderStars(pop) {
 }
 function nextQuestion() {
   let n = 0;
-  do { q = Questions.generate(subject, { grade: S.grade, mathLevel: levelFor('math'), phonicsLevel: levelFor('phonics') }); } while (q.key === lastKey && n++ < 10);
+  const opts = { grade: S.grade, subjects: SUBJECTS.filter(x => S[x]) };
+  for (const x of SUBJECTS) opts[`${x}Level`] = levelFor(x);
+  do { q = Questions.generate(subject, opts); } while (q.key === lastKey && n++ < 10);
   lastKey = q.key; locked = false; misses = 0;
   $('#visual').innerHTML = q.visual;
   $('#prompt').textContent = q.text;
@@ -942,11 +951,11 @@ function renderParent() {
   });
   $('#apiKey').value = S.apiKey;
   if ('speechSynthesis' in window) fillVoices();
-  const L = getLevels(), auto = S.mathLevel === 'auto' || S.phonicsLevel === 'auto';
-  for (const sub of ['math', 'phonics']) document.querySelectorAll(`[data-k=${sub}Level] option`).forEach(o => { if (o.value !== 'auto') o.textContent = levelName(sub, +o.value); });
+  const auto = SUBJECTS.some(x => S[`${x}Level`] === 'auto');
+  for (const sub of SUBJECTS) document.querySelectorAll(`[data-k=${sub}Level] option`).forEach(o => { if (o.value !== 'auto') o.textContent = levelName(sub, +o.value); });
   $('#gradeInfo').textContent = GRADE_INFO[S.grade];
   $('#levelInfo').innerHTML = auto
-    ? `Right now: <b>${levelName('math', levelFor('math'))}</b> · <b>${levelName('phonics', levelFor('phonics'))}</b>. `
+    ? `Right now: ${SUBJECTS.filter(x => S[x]).map(x => `<b>${levelName(x, levelFor(x))}</b>`).join(' · ')}. `
       + `Moves up after 7 of 8 right on the first try, and back down after 4 misses in 8. <button class="pbtn ghost" id="resetLevels" style="margin:0;padding:6px 12px;font-size:15px">Start over</button>`
     : '';
   const rl = $('#resetLevels'); if (rl) rl.onclick = () => { store.set('ss.levels', {}); renderParent(); };
