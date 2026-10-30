@@ -82,6 +82,8 @@
   .install .pbtn { margin: 0; }
   .install .iconbtn.small { width: 40px; height: 40px; font-size: 18px; border-radius: 12px; background: #eee; }
   .install .key { display: inline-block; background: #eef; border-radius: 6px; padding: 0 6px; font-weight: 600; }
+  .steps { margin: 10px 0 0; padding-left: 26px; font-size: 18px; line-height: 1.6; }
+  .steps .key { display: inline-block; background: #eef; border-radius: 6px; padding: 0 6px; font-weight: 600; }
 
   /* Quiz */
   .topbar { width: 100%; max-width: 900px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -476,6 +478,13 @@
           <button class="pbtn" id="vidAdd">Add videos</button>
         </details>
         <div class="status" id="vidStatus"></div>
+      </div>
+
+      <div class="panel" id="installPanel">
+        <h4>📱 Put it on the Home Screen</h4>
+        <p class="help" id="installPanelHow"></p>
+        <button class="pbtn" id="installPanelGo">Add to Home Screen</button>
+        <ol class="steps hidden" id="installSteps"></ol>
       </div>
 
       <details class="panel more">
@@ -1311,11 +1320,29 @@ refreshChannels(false).then(renderHome);
 // Android/Chrome offers a real install prompt; iPad/iPhone can only be added from Safari's Share menu, so we show the steps.
 const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 let installPrompt = null;
-window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstallCard(); });
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstallCard(); renderInstallPanel(); });
+const ua = navigator.userAgent;
+let isApple = /iPad|iPhone|iPod|Macintosh/.test(ua) && 'ontouchend' in document;
+let isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+let isAndroid = /Android/.test(ua);
+// How to add the icon on this device, as a list of steps. Empty when the browser can do it for us or it's a desktop.
+function installSteps() {
+  if (installPrompt) return [];
+  if (isApple && isSafari) return ['Tap <span class="key">Share ⬆︎</span> at the top of Safari.', 'Scroll down and tap <span class="key">Add to Home Screen</span>.', 'Tap <span class="key">Add</span>. Star Steps now opens from its own icon.'];
+  if (isApple) return ['Open <b>Safari</b> and go to this page (only Safari can add it).', 'Tap <span class="key">Share ⬆︎</span>, then <span class="key">Add to Home Screen</span>.', 'Tap <span class="key">Add</span>.'];
+  if (isAndroid) return ['Tap the <span class="key">⋮</span> menu at the top of the browser.', 'Tap <span class="key">Add to Home screen</span> (or <span class="key">Install app</span>).', 'Tap <span class="key">Add</span>.'];
+  return [];
+}
+async function install() {
+  if (installPrompt) {
+    installPrompt.prompt(); const { outcome } = await installPrompt.userChoice; installPrompt = null;
+    if (outcome === 'accepted') store.set('ss.installed', true);
+    $('#install').classList.add('hidden'); renderInstallPanel(); return;
+  }
+  const ol = $('#installSteps'); ol.innerHTML = installSteps().map(t => `<li>${t}</li>`).join(''); ol.classList.remove('hidden');
+}
 function showInstallCard() {
   if (standalone || Date.now() < store.get('ss.installSnooze', 0)) return;
-  const ua = navigator.userAgent, isApple = /iPad|iPhone|iPod|Macintosh/.test(ua) && 'ontouchend' in document;
-  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
   const how = $('#installHow');
   if (installPrompt) how.textContent = 'Opens full screen with its own icon, like an app.';
   else if (isApple && isSafari) how.innerHTML = 'In Safari, tap <span class="key">Share ⬆︎</span> then <span class="key">Add to Home Screen</span>.';
@@ -1324,9 +1351,22 @@ function showInstallCard() {
   $('#installGo').classList.toggle('hidden', !installPrompt);
   $('#install').classList.remove('hidden');
 }
-$('#installGo').onclick = async () => { if (!installPrompt) return; installPrompt.prompt(); await installPrompt.userChoice; installPrompt = null; $('#install').classList.add('hidden'); };
+// Grown-ups screen: always there, so the icon can be added later even after the home card was dismissed.
+function renderInstallPanel() {
+  const panel = $('#installPanel'), how = $('#installPanelHow');
+  if (standalone || store.get('ss.installed', false)) { panel.classList.remove('hidden'); how.textContent = 'Star Steps is on the Home Screen. 🎉'; $('#installPanelGo').classList.add('hidden'); return; }
+  if (!installPrompt && !installSteps().length) { panel.classList.add('hidden'); return; } // desktop
+  panel.classList.remove('hidden');
+  how.textContent = installPrompt ? 'Adds an icon to the Home Screen and opens full screen, like an app.'
+    : 'Adds an icon to the Home Screen so kids open it like an app, full screen with no browser bar.';
+  $('#installPanelGo').classList.remove('hidden');
+  $('#installPanelGo').textContent = installPrompt ? 'Add to Home Screen' : 'Show me how';
+}
+$('#installGo').onclick = install;
+$('#installPanelGo').onclick = install;
 $('#installNo').onclick = () => { store.set('ss.installSnooze', Date.now() + 7 * 86400000); $('#install').classList.add('hidden'); };
 showInstallCard();
+renderInstallPanel();
 
 // Keep the game's files on the device so it opens fast and the quiz works offline.
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
