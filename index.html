@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#7c5cff">
 <title>Star Steps</title>
 <link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -67,6 +68,13 @@
   .subject:nth-child(5) { background: var(--purple); transform: rotate(-2deg); }
   .note { font-size: 20px; background: rgba(255,255,255,.8); padding: 12px 20px; border-radius: 16px; margin-top: 4vh; max-width: 640px; text-align: center; }
   .note:empty { display: none; }
+  .install { display: flex; gap: 14px; align-items: center; background: #fff; border-radius: 22px; padding: 12px 16px; margin-top: 16px;
+    max-width: 640px; box-shadow: 0 6px 0 rgba(0,0,0,.12); font-size: 17px; line-height: 1.3; -webkit-user-select: text; user-select: text; }
+  .install img { width: 56px; height: 56px; border-radius: 14px; }
+  .install .grow { flex: 1; } .install b { display: block; font-size: 19px; }
+  .install .pbtn { margin: 0; }
+  .install .iconbtn.small { width: 40px; height: 40px; font-size: 18px; border-radius: 12px; background: #eee; }
+  .install .key { display: inline-block; background: #eef; border-radius: 6px; padding: 0 6px; font-weight: 600; }
 
   /* Quiz */
   .topbar { width: 100%; max-width: 900px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -250,6 +258,15 @@
   </div>
   <div class="subjects" id="subjects"></div>
   <p class="note" id="homeNote"></p>
+  <div class="install hidden" id="install">
+    <img src="icon.png" alt="">
+    <div class="grow">
+      <b>Put Star Steps on the Home Screen</b>
+      <span id="installHow"></span>
+    </div>
+    <button class="pbtn" id="installGo">Install</button>
+    <button class="iconbtn small" id="installNo" aria-label="Not now">✕</button>
+  </div>
 </section>
 
 <!-- QUIZ -->
@@ -1098,6 +1115,30 @@ document.addEventListener('gesturestart', e => e.preventDefault()); // no pinch-
 
 renderHome();
 refreshChannels(false).then(renderHome);
+
+// ---------- Install as an app ----------
+// Android/Chrome offers a real install prompt; iPad/iPhone can only be added from Safari's Share menu, so we show the steps.
+const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstallCard(); });
+function showInstallCard() {
+  if (standalone || Date.now() < store.get('ss.installSnooze', 0)) return;
+  const ua = navigator.userAgent, isApple = /iPad|iPhone|iPod|Macintosh/.test(ua) && 'ontouchend' in document;
+  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+  const how = $('#installHow');
+  if (installPrompt) how.textContent = 'Opens full screen with its own icon, like an app.';
+  else if (isApple && isSafari) how.innerHTML = 'In Safari, tap <span class="key">Share ⬆︎</span> then <span class="key">Add to Home Screen</span>.';
+  else if (isApple) how.innerHTML = 'Open this page in <b>Safari</b>, then tap <span class="key">Share ⬆︎</span> → <span class="key">Add to Home Screen</span>.';
+  else return; // desktop browsers: nothing to show
+  $('#installGo').classList.toggle('hidden', !installPrompt);
+  $('#install').classList.remove('hidden');
+}
+$('#installGo').onclick = async () => { if (!installPrompt) return; installPrompt.prompt(); await installPrompt.userChoice; installPrompt = null; $('#install').classList.add('hidden'); };
+$('#installNo').onclick = () => { store.set('ss.installSnooze', Date.now() + 7 * 86400000); $('#install').classList.add('hidden'); };
+showInstallCard();
+
+// Keep the game's files on the device so it opens fast and the quiz works offline.
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
 </html>
