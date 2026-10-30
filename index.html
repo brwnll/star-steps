@@ -786,15 +786,20 @@ function videoPool() {
   const blocked = new Set(store.get('ss.blocked', [])), seen = new Set(), out = [];
   for (const ch of S.channels) for (const v of ch.videos || []) {
     if (S.kidsOnly && !v.kids) continue;
-    out.push(v);
+    out.push({ ...v, from: ch.id });
   }
-  out.push(...S.videos);
+  for (const v of S.videos) out.push({ ...v, from: v.channel || v.id }); // single videos group by their channel name
   return out.filter(v => !blocked.has(v.id) && !seen.has(v.id) && seen.add(v.id));
 }
+// Four choices: unwatched first, and spread across channels so one busy channel doesn't fill every slot.
 function pickFour() {
   const recent = new Set(store.get('ss.recent', []));
   const pool = shuffle(videoPool());
-  return [...pool.filter(v => !recent.has(v.id)), ...pool.filter(v => recent.has(v.id))].slice(0, 4);
+  const ordered = [...pool.filter(v => !recent.has(v.id)), ...pool.filter(v => recent.has(v.id))];
+  const picks = [], used = new Set();
+  for (const v of ordered) if (picks.length < 4 && !used.has(v.from)) { picks.push(v); used.add(v.from); }
+  for (const v of ordered) if (picks.length < 4 && !picks.includes(v)) picks.push(v);
+  return picks;
 }
 const thumb = id => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
 
