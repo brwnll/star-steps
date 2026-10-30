@@ -183,10 +183,10 @@
     { g: 2, steps: ['go to the library', 'pick out a book', 'check it out', 'read it at home'] },
     { g: 2, steps: ['buy the seeds', 'dig a hole', 'plant them', 'wait for sprouts'] },
     { g: 3, steps: ['the bird gathers sticks', 'it builds a nest', 'it lays eggs', 'the chicks hatch'] },
-    { g: 3, steps: ['snow falls', 'the kids build a snowman', 'the sun comes out', 'the snowman melts'] },
+    { g: 3, steps: ['snow falls', 'the kids build a snowman', 'the sun comes out and it gets warm', 'the snowman melts'] },
     { g: 3, steps: ['write a story', 'fix the mistakes', 'read it to the class'] },
     { g: 3, steps: ['plant seeds in spring', 'water them all summer', 'pick pumpkins in fall'] },
-    { g: 3, steps: ['the sun warms the sea', 'water rises as vapor', 'clouds form', 'rain falls'] },
+    { g: 3, steps: ['the kids fill a pool', 'the hot sun dries it up', 'the water turns into clouds', 'it rains on the pool'] },
   ];
 
   // ---------- Science: sorting data ----------
@@ -206,7 +206,7 @@
     'non-living': [['rock', '🪨'], ['car', '🚗'], ['chair', '🪑'], ['ball', '⚽'], ['book', '📚'], ['spoon', '🥄'], ['robot', '🤖'], ['bike', '🚲'], ['hat', '🎩'], ['clock', '🕐']] };
 
   const MATTER = { solid: [['ice cube', '🧊'], ['rock', '🪨'], ['apple', '🍎'], ['spoon', '🥄'], ['book', '📚'], ['brick', '🧱'], ['pencil', '✏️']],
-    liquid: [['milk', '🥛'], ['juice', '🧃'], ['honey', '🍯'], ['rain', '🌧️'], ['hot tea', '🍵'], ['ocean water', '🌊']],
+    liquid: [['milk', '🥛'], ['juice', '🧃'], ['honey', '🍯'], ['rain', '🌧️'], ['water', '💧'], ['ocean water', '🌊']],
     gas: [['steam', '♨️'], ['the air in a balloon', '🎈'], ['the air we breathe', '💨'], ['the air inside a bubble', '🫧']] };
 
   const SENSES = { sight: ['👀', ['see a rainbow', 'read a sign', 'watch a bird fly']], hearing: ['👂', ['hear a bell ring', 'listen to music', 'hear a dog bark']],
@@ -228,7 +228,7 @@
   const LIFECYCLES = { frog: ['🐸', ['egg', 'tadpole', 'froglet', 'frog']], butterfly: ['🦋', ['egg', 'caterpillar', 'chrysalis', 'butterfly']],
     plant: ['🌻', ['seed', 'sprout', 'leafy plant', 'flowering plant']], chicken: ['🐔', ['egg', 'chick', 'grown chicken']] };
 
-  const PLANT_PARTS = { roots: ['takes in water from the soil', 'holds the plant in the ground'], stem: ['holds the plant up', 'carries water up to the leaves'],
+  const PLANT_PARTS = { roots: ['takes in water from the soil', 'holds the plant in the ground'], stem: ['connects the roots to the leaves', 'carries water up to the leaves'],
     leaves: ['makes food from sunlight'], flower: ['makes the seeds'], seed: ['grows into a new plant'] };
 
   // Animal body parts: part -> [emoji, [jobs]]. Each job belongs to one part only.
@@ -342,7 +342,7 @@
   ];
 
   // Names that take no 'a'/'an' in front (mass nouns and phrases).
-  const NO_ARTICLE = ['milk', 'juice', 'honey', 'rain', 'hot tea', 'ocean water', 'steam', 'the air in a balloon', 'the air we breathe', 'the air inside a bubble', 'grass'];
+  const NO_ARTICLE = ['milk', 'juice', 'honey', 'rain', 'water', 'ocean water', 'steam', 'the air in a balloon', 'the air we breathe', 'the air inside a bubble', 'grass'];
 
   const api = { NO_ARTICLE, HABITAT_ALIKE, BODY_PARTS, NEEDS, FORCES, MOON, PASSAGES, SEQUENCES, ANIMALS, GROUPS, LIVING, MATTER, SENSES, HABITATS, LIFECYCLES, PLANT_PARTS, FACTS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -691,21 +691,22 @@
     const count = grade === 1 ? 4 : 6, items = [], used = new Set();
     for (const b of bins) { const c = pick(pool.filter(x => x.bin === b)); items.push(c); used.add(c.emoji); } // one of each, so every box gets used
     for (const x of shuffle(pool)) { if (items.length >= count) break; if (!items.includes(x) && !used.has(x.emoji)) { items.push(x); used.add(x.emoji); } }
-    const shown = shuffle(items), list = bins.length > 2 ? bins.slice(0, -1).join(', ') + ' or ' + bins[bins.length - 1] : bins.join(' or ');
-    return { key: `sort${kind}${shown.map(i => i.label).join(',')}`, visual: TRAY, text: `Drag each one into the right box: ${list}?`,
-      say: `Drag each picture into the right box. Is it ${list}?`, choices: [], answer: Object.fromEntries(shown.map(i => [i.label, i.bin])),
+    const shown = shuffle(items), named = kind === 'living' ? bins : bins.map(b => 'a ' + b);
+    const list = named.length > 2 ? named.slice(0, -1).join(', ') + ' or ' + named[named.length - 1] : named.join(' or ');
+    return { key: `sort${kind}${shown.map(i => i.label).join(',')}`, visual: TRAY, text: `Drag each one into the right box. Is it ${list}?`,
+      say: `Drag each picture into the right box. Is each one ${list}?`, choices: [], answer: Object.fromEntries(shown.map(i => [i.label, i.bin])),
       touch: { kind: 'sort', bins, items: shown }, sortKind: kind };
   }
   const notInOrder = (steps) => { let s; do s = shuffle(steps); while (s.join() === steps.join()); return s; };
   function sequenceQ(grade) {
     const item = pick(Lessons.SEQUENCES.filter(x => x.g === grade)), steps = item.steps, shown = notInOrder(steps);
-    return { key: `seq${steps[0]}`, visual: '<div class="pic small">🔢</div>', text: 'Put these in order: first to last.',
-      say: `Put these in order, from first to last: ${shown.join('. ')}.`, choices: [], answer: steps, touch: { kind: 'order', items: shown }, item };
+    return { key: `seq${Lessons.SEQUENCES.indexOf(item)}`, visual: '<div class="pic small">🔢</div>', text: 'Put these in order: first to last.',
+      say: `Here are some things that happen, all mixed up: ${shown.join('. ')}. Drag them into order, from first to last.`, choices: [], answer: steps, touch: { kind: 'order', items: shown }, item };
   }
   function lifeorderQ() {
     const name = pick(Object.keys(Lessons.LIFECYCLES)), [emoji, stages] = Lessons.LIFECYCLES[name], shown = notInOrder(stages);
     return { key: `lifeorder${name}`, visual: picHtml(emoji, `life of a ${name}`), text: `Put the life of a ${name} in order.`,
-      say: `Put the life of a ${name} in order, from first to last: ${shown.join('. ')}.`, choices: [], answer: stages, touch: { kind: 'order', items: shown }, name };
+      say: `Here are the stages in the life of a ${name}, all mixed up: ${shown.join('. ')}. Drag them into order, from first to last.`, choices: [], answer: stages, touch: { kind: 'order', items: shown }, name };
   }
   // Tap-the-part pictures. Each tappable part is a <g data-part="…">; the game lights it up when tapped.
   const PLANT_TAP = ['roots', 'stem', 'leaves', 'flower'];
@@ -719,8 +720,8 @@
   const SENSE_PART = { sight: 'eyes', hearing: 'ears', smell: 'nose', taste: 'mouth', touch: 'hand' };
   const bodySvg = () => `<svg class="tapart" viewBox="0 0 360 300" aria-label="a face and a hand">
     <circle cx="150" cy="150" r="105" fill="#f8d3b0"/>
-    <g data-part="ears"><ellipse cx="42" cy="150" rx="24" ry="36" fill="#f4c7a1" stroke="#e0a880" stroke-width="4"/><ellipse cx="258" cy="150" rx="24" ry="36" fill="#f4c7a1" stroke="#e0a880" stroke-width="4"/></g>
-    <g data-part="eyes"><circle cx="110" cy="120" r="22" fill="#fff"/><circle cx="190" cy="120" r="22" fill="#fff"/><circle cx="112" cy="124" r="11" fill="#3a2a1a"/><circle cx="192" cy="124" r="11" fill="#3a2a1a"/></g>
+    <g data-part="ears"><ellipse cx="42" cy="150" rx="24" ry="36" fill="#f4c7a1" stroke="#e0a880" stroke-width="4"/><ellipse cx="258" cy="150" rx="24" ry="36" fill="#f4c7a1" stroke="#e0a880" stroke-width="4"/><rect x="10" y="105" width="64" height="90" fill="transparent"/><rect x="226" y="105" width="64" height="90" fill="transparent"/></g>
+    <g data-part="eyes"><circle cx="110" cy="120" r="22" fill="#fff"/><circle cx="190" cy="120" r="22" fill="#fff"/><circle cx="112" cy="124" r="11" fill="#3a2a1a"/><circle cx="192" cy="124" r="11" fill="#3a2a1a"/><rect x="80" y="90" width="140" height="60" fill="transparent"/></g>
     <g data-part="nose"><path d="M150 138 l-20 50 h40 z" fill="#d9926a" stroke="#b87350" stroke-width="3" stroke-linejoin="round"/><rect x="120" y="135" width="60" height="58" fill="transparent"/></g>
     <g data-part="mouth"><path d="M105 205 q45 40 90 0" stroke="#c0392b" stroke-width="12" fill="none" stroke-linecap="round"/><rect x="95" y="190" width="110" height="50" fill="transparent"/></g>
     <g data-part="hand"><path d="M300 290 v-90 a14 14 0 0 1 28 0 v30 v-70 a14 14 0 0 1 28 0 v70 v-60 a14 14 0 0 1 28 0 v60 v-40 a14 14 0 0 1 28 0 v70 q0 60 -56 60 z" fill="#f4c7a1" transform="translate(-30 0)"/></g>
@@ -737,9 +738,25 @@
   }
   // Build a word from letter tiles: picture words in grade 1, long-vowel words in grade 2, tricky spellings in grade 3.
   const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+  // Words that sound the same as a build word. The decoy letters must never let the tiles spell one of these,
+  // because a child who hears "which" and builds "witch" has spelled a real word and would be marked wrong.
+  // (Other words the tiles might spell, like "men" from t-e-n-m, are fine: they don't match what was heard or pictured.)
+  const HOMOPHONE_OF = (() => {
+    const m = {}, add = (a, b) => { (m[a] = m[a] || new Set()).add(b); (m[b] = m[b] || new Set()).add(a); };
+    for (const g of SOUND_ALIKE) for (const a of g) for (const b of g) if (a !== b) add(a, b);
+    for (const h of HOMOPHONES) add(h[1], h[2]);
+    const extra = { sun: ['son'], time: ['thyme'], gate: ['gait'], nose: ['knows'], does: ['doze'], which: ['witch'], where: ['wear', 'ware'],
+      ride: ['ryde'], hole: ['whole'], made: ['maid'], road: ['rode'], tale: ['tail'], sea: ['see'], be: ['bee'], ate: ['eight'], blue: ['blew'],
+      meet: ['meat'], pair: ['pear'], plain: ['plane'], sail: ['sale'], week: ['weak'], know: ['no'], would: ['wood'], hour: ['our'], flower: ['flour'] };
+    for (const [a, list] of Object.entries(extra)) for (const b of list) add(a, b);
+    return m;
+  })();
+  const canSpell = (w, tiles) => { const left = [...tiles]; for (const c of w) { const i = left.indexOf(c); if (i < 0) return false; left.splice(i, 1); } return true; };
+  const spellsAnother = (word, tiles) => [...(HOMOPHONE_OF[word] || [])].some(w => canSpell(w, tiles));
   function buildQ(grade) {
     const word = grade === 1 ? pick(CVC) : grade === 2 ? pick(Object.values(LONG).flat()) : pick(Object.keys(SPELLING));
-    const extra = pickN([...ALPHA].filter(c => !word.includes(c)), grade === 1 ? 1 : 2);
+    let extra, tries = 0;
+    do extra = pickN([...ALPHA].filter(c => !word.includes(c)), grade === 1 ? 1 : 2); while (spellsAnother(word, [...word, ...extra]) && tries++ < 30);
     const tiles = shuffle([...word, ...extra]);
     return { key: `build${word}`, visual: grade === 1 ? pic(word) : '<div class="pic ear">👂</div>', text: grade === 1 ? 'Build the word!' : 'Spell the word you hear.',
       say: `Spell the word: ${word}.`, choices: [], answer: word, touch: { kind: 'build', tiles }, hint: word };
@@ -763,9 +780,10 @@
       const t = Math.round(n / 10) * 10;
       return lineQ(0, 100, 10, 10, every(100, 10), t, `Round ${n} to the nearest ten. Slide there!`, `Round ${n} to the nearest ten, and slide the marker there.`, { key: `lineround${n}`, n: [n, 10] });
     }
-    const d = pick([2, 3, 4]), k = rand(1, d - 1);
-    const labels = Array.from({ length: d + 1 }, (_, i) => [i, i === 0 ? '0' : i === d ? '1' : `${i}/${d}`]);
-    return lineQ(0, d, 1, 1, labels, k, `Slide to ${k}/${d}.`, `Slide the marker to ${k} ${d === 2 ? 'half' : d === 3 ? 'third' : 'quarter'}${k > 1 ? 's' : ''}.`, { key: `linefrac${k}/${d}`, n: [k, d] });
+    const d = pick([2, 3, 4]), k = d === 4 ? pick([1, 3]) : rand(1, d - 1); // 2/4 would just be a half
+    const part = n => n === 1 ? (d === 2 ? 'one half' : d === 3 ? 'one third' : 'one quarter') : `${n} ${d === 3 ? 'thirds' : 'quarters'}`;
+    const labels = Array.from({ length: d + 1 }, (_, i) => [i, i === 0 ? '0' : i === d ? '1' : `${i}/${d}`, i === 0 ? 'zero' : i === d ? 'one' : part(i)]);
+    return lineQ(0, d, 1, 1, labels, k, `Slide to ${k}/${d}.`, `Slide the marker to ${part(k)}.`, { key: `linefrac${k}/${d}`, n: [k, d] });
   }
   math1.numline = numline1; math2.numline = numline2; math3.numline = numline3;
   phonics1.build = () => buildQ(1); phonics2.build = () => buildQ(2); phonics3.build = () => buildQ(3);
@@ -818,7 +836,7 @@
   }
 
   const api = { generate, LEVEL_NAMES, MIX, SUBJECTS, data: { PICS, CVC, RHYMES, SIGHT, LETTERS, SAME_SOUND, COINS, STORIES, BLENDS, LONG, PLURALS, COMPOUNDS,
-    CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES, SOUND_ALIKE, PLANT_TAP, SENSE_PART } };
+    CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES, SOUND_ALIKE, PLANT_TAP, SENSE_PART, HOMOPHONE_OF, canSpell } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Questions = api;
 })(this);

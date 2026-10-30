@@ -38,6 +38,8 @@ if (new Set(bodyJobs).size !== bodyJobs.length) errors.push('BODY_PARTS: a job i
 const forceActs = Object.values(Lessons.FORCES).flat().map(x => x[0]);
 if (new Set(forceActs).size !== forceActs.length) errors.push('FORCES: an action is both a push and a pull');
 if (forceActs.some(a => /\b(push|pull)/i.test(a))) errors.push('FORCES: an action gives away the answer');
+{ const jobs = Object.values(Lessons.PLANT_PARTS).flat(); if (new Set(jobs).size !== jobs.length) errors.push('PLANT_PARTS: a job is listed under two parts');
+  const acts = Object.values(Lessons.SENSES).flatMap(x => x[1]); if (new Set(acts).size !== acts.length) errors.push('SENSES: an action is listed under two senses'); }
 if (Lessons.NEEDS.wants.some(w => Lessons.NEEDS.animals.includes(w) || Lessons.NEEDS.plants.includes(w))) errors.push('NEEDS: a want is also a need');
 for (const [name, list] of [['PASSAGES', Lessons.PASSAGES], ['FACTS', Lessons.FACTS]]) {
   for (const it of list) {
@@ -238,6 +240,8 @@ function checkTouch(q, grade, level) {
       const src = { living: Lessons.LIVING, matter: Lessons.MATTER, group: null }[q.sortKind];
       if (t.items.length !== (grade === 1 ? 4 : 6) || t.bins.length < 2) fail(q, 'Sort size wrong');
       if (new Set(t.items.map(i => i.emoji)).size !== t.items.length) fail(q, 'Two sort items share a picture');
+      if (new Set(t.items.map(i => i.label)).size !== t.items.length || Object.keys(q.answer).length !== t.items.length) fail(q, 'Sort labels not unique');
+      for (const b of t.bins) if (!q.text.includes(b) || !q.say.includes(b)) fail(q, `Box ${b} not named in the question`);
       for (const b of t.bins) if (!t.items.some(i => i.bin === b)) fail(q, `Empty sort box ${b}`);
       for (const it of t.items) {
         if (q.answer[it.label] !== it.bin || !t.bins.includes(it.bin)) fail(q, `Sort answer wrong for ${it.label}`);
@@ -253,6 +257,7 @@ function checkTouch(q, grade, level) {
       const truth = q.type === 'sequence' ? q.item.steps : Lessons.LIFECYCLES[q.name][1];
       if (q.type === 'sequence' && q.item.g !== grade) fail(q, 'Sequence from another grade');
       if (q.answer.join() !== truth.join()) fail(q, 'Order answer is not the real order');
+      if (new Set(truth).size !== truth.length) fail(q, 'Order steps repeat');
       if ([...t.items].sort().join() !== [...truth].sort().join() || t.items.join() === truth.join()) fail(q, 'Shown steps are not a shuffle of the answer');
       if (!t.items.every(x => q.say.includes(x))) fail(q, 'Spoken question does not read every step');
       break;
@@ -263,6 +268,7 @@ function checkTouch(q, grade, level) {
       for (const p of parts) if (!q.visual.includes(`data-part="${p}"`)) fail(q, `Picture has no ${p} to tap`);
       if (q.type === 'plantlabel' && !Lessons.PLANT_PARTS[q.answer].includes(q.job)) fail(q, 'Plant job wrong');
       if (q.type === 'sensetap' && (data.SENSE_PART[q.sense] !== q.answer || !Lessons.SENSES[q.sense][1].includes(q.act))) fail(q, 'Sense part wrong');
+      if (!q.say.includes(q.job || q.act)) fail(q, 'Tap question does not say the job');
       break;
     }
     case 'build': {
@@ -272,6 +278,8 @@ function checkTouch(q, grade, level) {
       if (left.length !== (grade === 1 ? 1 : 2) || left.some(c => word.includes(c))) fail(q, 'Extra tiles wrong');
       if (grade === 1 && !q.visual.includes(data.PICS[word])) fail(q, 'Build picture mismatch');
       if (!q.say.includes(word)) fail(q, 'Build word not spoken');
+      const other = [...(data.HOMOPHONE_OF[word] || [])].find(w => data.canSpell(w, t.tiles));
+      if (other) fail(q, `Tiles also spell ${other}, which sounds the same`);
       break;
     }
     case 'line': {
@@ -283,7 +291,11 @@ function checkTouch(q, grade, level) {
       if (grade === 3 && level === 1 && (Math.round(q.n[0] / 10) * 10 !== a || q.n[0] % 10 === 0)) fail(q, 'Rounding line wrong');
       if (grade === 3 && level === 2 && (q.n[0] !== a || t.max !== q.n[1] || !q.text.includes(`${q.n[0]}/${q.n[1]}`))) fail(q, 'Fraction line wrong');
       if (grade === 3 && level === 2 && !t.labels.some(l => l[1] === '1')) fail(q, 'Fraction line should end at 1');
-      if (grade < 3 && !q.text.includes(String(a))) fail(q, 'Line target not in text');
+      if (grade < 3 && (!q.text.includes(String(a)) || !q.say.includes(String(a)))) fail(q, 'Line target not in text');
+      if (grade === 3 && level === 1 && !q.text.includes(String(q.n[0]))) fail(q, 'Rounding text lacks the number');
+      if (grade === 3 && level === 2 && (!q.say.match(/half|third|quarter/) || t.labels.some(l => !l[2]))) fail(q, 'Fraction line needs spoken labels');
+      for (const [v] of t.labels) if (v < t.min || v > t.max || Math.abs((v - t.min) / t.step - Math.round((v - t.min) / t.step)) > 1e-9) fail(q, 'Label off the line');
+      if (Math.abs((t.max - t.min) / t.tick - Math.round((t.max - t.min) / t.tick)) > 1e-9) fail(q, 'Ticks do not fit the line');
       break;
     }
     default: fail(q, 'Unknown touch kind');

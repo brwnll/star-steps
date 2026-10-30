@@ -105,6 +105,7 @@
   .stars span.pop { animation: starPop .6s ease; }
   @keyframes starPop { 40% { transform: scale(1.8) rotate(20deg); } }
   .stage { flex: 1; width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+  #quiz .stage { overflow-y: auto; justify-content: flex-start; min-height: 0; } #quiz .stage > :first-child { margin-top: auto; } #quiz .stage > :last-child { margin-bottom: auto; }
   .card { position: relative; width: 100%; background: var(--paper); border-radius: 36px; padding: 26px 24px 22px;
     text-align: center; box-shadow: 0 10px 0 rgba(43,34,80,.15); border: 5px solid #fff; }
   .buddy { position: absolute; left: -20px; top: -40px; font-size: 76px; transition: transform .3s; }
@@ -144,20 +145,21 @@
   .ans.right { background: var(--green) !important; animation: grow .5s ease; outline: 8px solid #fff; }
   .ans.wrong { background: #c9c3dd !important; animation: wobble .45s ease; box-shadow: none; }
   /* Touch questions: drag, tap, build, slide */
-  .pic.small { font-size: 80px; animation: none; }
+  .pic.small { font-size: 56px; line-height: 1; animation: none; }
   .choices.touch { display: flex; flex-direction: column; align-items: center; gap: 18px; }
   .tray, .bins, .tiles, .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; width: 100%; }
   .tray { min-height: 120px; padding: 10px; border-radius: 22px; background: rgba(255,255,255,.55); }
+  .chip, .step, .tile, .tapart, .numline { -webkit-touch-callout: none; }
   .chip { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 112px; height: 112px; border-radius: 22px;
     background: #fff; box-shadow: 0 6px 0 rgba(0,0,0,.15); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; font-weight: 600; }
   .chip .em { font-size: 52px; line-height: 1.1; } .chip small { font-size: 15px; color: #444; text-align: center; padding: 0 4px; line-height: 1.1; }
   .chip.sel { outline: 6px solid var(--yellow); } .chip.dragging { position: fixed; z-index: 50; transform: scale(1.1); box-shadow: 0 14px 24px rgba(0,0,0,.3); pointer-events: none; }
-  .chip.wrong, .tile.wrong, .step.wrong { animation: wobble .45s ease; background: #c9c3dd !important; }
-  .chip.right, .step.right { background: #c9f5dd; }
+  .chip.wrong, .slotbox.wrong, .step.wrong { animation: wobble .45s ease; background: #c9c3dd !important; }
+  .chip.right, .slotbox.right, .step.right { background: #c9f5dd; }
   .bin { flex: 1 1 200px; max-width: 320px; min-height: 160px; border-radius: 24px; border: 5px dashed rgba(124,92,255,.5); background: rgba(255,255,255,.45); padding: 8px; }
   .bin.over { background: rgba(255,210,63,.45); border-style: solid; }
   .bin b { display: block; font-size: 26px; color: var(--purple); text-align: center; margin-bottom: 6px; }
-  .bin .slot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 100px; } .bin .chip { width: 92px; height: 92px; } .bin .chip .em { font-size: 42px; }
+  .bin .slot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 100px; } .bin .chip { width: 92px; height: auto; min-height: 92px; padding: 4px 0; } .bin .chip .em { font-size: 42px; }
   .orderlist { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 640px; }
   .step { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 20px; padding: 14px 18px; font-size: 26px; font-weight: 600; text-align: left;
     box-shadow: 0 6px 0 rgba(0,0,0,.15); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
@@ -167,11 +169,12 @@
   .chip.gap, .step.gap { opacity: .25; }
   .slots .slotbox { width: 76px; height: 86px; border-radius: 16px; border: 5px dashed rgba(124,92,255,.5); background: rgba(255,255,255,.5); display: grid; place-items: center; font-size: 48px; font-weight: 700; color: var(--purple); }
   .slots .slotbox.filled { border-style: solid; background: #fff; }
+  .slots.many .slotbox, .tiles.many .tile { width: 58px; height: 66px; font-size: 36px; }
   .tile { width: 76px; height: 86px; border-radius: 16px; background: var(--blue); color: #fff; font-size: 48px; font-weight: 700; } .tile.used { visibility: hidden; }
   .check { font-size: 30px; padding: 14px 44px; background: var(--green); color: #fff; border-radius: 999px; font-weight: 700; margin-top: 4px; }
   .numline { width: 100%; max-width: 760px; touch-action: none; user-select: none; -webkit-user-select: none; }
   .numline .knob { fill: var(--pink); stroke: #fff; stroke-width: 6; } .numline .val { font-size: 34px; font-weight: 700; fill: var(--purple); }
-  .numline .lbl { font-size: 22px; font-weight: 600; fill: #333; } .numline.right .knob { fill: var(--green); }
+  .numline .lbl { font-size: 22px; font-weight: 600; fill: #333; } .numline.right .knob { fill: var(--green); } .numline .knob.wrong { fill: #c9c3dd; }
   .visual svg.tapart { width: 300px; height: 300px; max-width: 90vw; }
   .tapart [data-part] { cursor: pointer; } .tapart [data-part].right { filter: drop-shadow(0 0 14px #2ec27e); } .tapart [data-part].wrong { opacity: .35; }
   .taphint { font-size: 30px; font-weight: 600; color: var(--purple); }
@@ -530,8 +533,8 @@
   </div>
 </section>
 
-<script src="lessons.js?v=4"></script>
-<script src="questions.js?v=10"></script>
+<script src="lessons.js?v=5"></script>
+<script src="questions.js?v=11"></script>
 <script>
 // ---------- Storage ----------
 const $ = s => document.querySelector(s);
@@ -762,7 +765,9 @@ function nextQuestion() {
     }
     box.append(wrap);
   });
-  setTimeout(() => say(q.say), 300);
+  const build = q.touch && q.touch.kind === 'build';
+  if (build && !('speechSynthesis' in window)) $('#prompt').textContent = `Spell: ${q.answer}`; // no voice on this device
+  setTimeout(() => say(q.say, build), 300); // a build-the-word question is unsolvable unheard, so it speaks even with read-aloud off
 }
 function buddy(cls) {
   const b = $('#buddy'); b.classList.remove('happy', 'oops'); void b.offsetWidth; b.classList.add(cls);
@@ -853,14 +858,16 @@ function renderSort(t, box) {
   const binEls = {};
   for (const b of t.bins) {
     const d = document.createElement('div'); d.className = 'bin'; d.dataset.bin = b; d.innerHTML = `<b>${esc(b)}</b><div class="slot"></div>`;
-    d.onclick = () => { const sel = box.querySelector('.chip.sel'); if (sel && !locked) { sel.classList.remove('sel'); place(sel, d); } };
+    d.onclick = e => { if (e.target.closest('.chip')) return; const sel = box.querySelector('.chip.sel'); if (sel && !locked) { sel.classList.remove('sel'); place(sel, d); } };
     bins.append(d); binEls[b] = d;
   }
   const check = checkButton(box, () => {
     const wrong = chips.filter(c => c.closest('.bin')?.dataset.bin !== q.answer[c.dataset.label]);
     if (!wrong.length) { chips.forEach(c => c.classList.add('right')); return succeed(check); }
     wrong.forEach(c => { c.classList.add('wrong'); });
-    const spoken = Object.entries(q.answer).map(([l, b]) => `${l} is ${b}`).join(', ');
+    const art = n => Lessons.NO_ARTICLE.includes(n) ? n : (/^[aeiou]/i.test(n) ? 'an ' : 'a ') + n;
+    const bin = b => q.sortKind === 'living' ? b : art(b);
+    const spoken = wrong.map(c => `${art(c.dataset.label)} is ${bin(q.answer[c.dataset.label])}`).join('. ');
     miss(null, () => chips.forEach(c => { c.classList.remove('wrong'); c.classList.add('right'); binEls[q.answer[c.dataset.label]].querySelector('.slot').append(c); }), spoken);
     if (!locked) setTimeout(() => wrong.forEach(c => { c.classList.remove('wrong'); tray.append(c); check.classList.add('hidden'); }), 600);
   });
@@ -913,8 +920,8 @@ function renderOrder(t, box) {
   box.prepend(list); renumber();
 }
 function renderBuild(t, box) {
-  const slots = document.createElement('div'); slots.className = 'slots';
-  const tiles = document.createElement('div'); tiles.className = 'tiles';
+  const slots = document.createElement('div'); slots.className = 'slots' + (q.answer.length > 7 ? ' many' : '');
+  const tiles = document.createElement('div'); tiles.className = 'tiles' + (q.answer.length > 7 ? ' many' : '');
   const word = q.answer, slotEls = [...word].map(() => { const d = document.createElement('div'); d.className = 'slotbox'; slots.append(d); return d; });
   const check = checkButton(box, () => {
     const typed = slotEls.map(d => d.textContent).join('');
@@ -922,7 +929,7 @@ function renderBuild(t, box) {
     slotEls.forEach((d, i) => { if (d.textContent !== word[i]) d.classList.add('wrong'); });
     miss(null, () => { slotEls.forEach((d, i) => { d.classList.remove('wrong'); d.textContent = word[i]; d.classList.add('filled', 'right'); }); tiles.querySelectorAll('.tile').forEach(x => x.classList.add('used')); },
       [...word].join(', ') + `. ${word}`);
-    setTimeout(() => slotEls.forEach(d => d.classList.remove('wrong')), 600);
+    if (!locked) setTimeout(() => slotEls.forEach(d => { if (d.classList.contains('wrong')) { d.classList.remove('wrong', 'filled'); d.tile.classList.remove('used'); d.textContent = ''; } update(); }), 600);
   });
   const update = () => check.classList.toggle('hidden', slotEls.some(d => !d.textContent));
   for (const letter of t.tiles) {
@@ -949,19 +956,20 @@ function renderLine(t, box) {
   let value = null;
   const knob = svg.querySelector('#lineKnob'), val = svg.querySelector('#lineVal');
   const label = v => (t.labels.find(l => l[0] === v) || [])[1] ?? String(v);
+  const spoken = v => (t.labels.find(l => l[0] === v) || [])[2] ?? label(v);
   const setFrom = clientX => {
     const r = svg.getBoundingClientRect(), x = (clientX - r.left) / r.width * W;
     let v = t.min + Math.round((x - L) / (R - L) * (t.max - t.min) / t.step) * t.step;
     v = Math.min(t.max, Math.max(t.min, v)); value = v;
-    knob.setAttribute('cx', X(v)); val.setAttribute('x', X(v)); val.textContent = label(v); check.classList.remove('hidden');
+    knob.classList.remove('wrong'); knob.setAttribute('cx', X(v)); val.setAttribute('x', X(v)); val.textContent = label(v); check.classList.remove('hidden');
   };
   svg.addEventListener('pointerdown', e => { if (locked) return; e.preventDefault(); try { svg.setPointerCapture(e.pointerId); } catch {} setFrom(e.clientX);
-    const mv = ev => setFrom(ev.clientX), up = () => { svg.removeEventListener('pointermove', mv); svg.removeEventListener('pointerup', up); say(label(value)); };
-    svg.addEventListener('pointermove', mv); svg.addEventListener('pointerup', up); });
+    const mv = ev => setFrom(ev.clientX), up = () => { svg.removeEventListener('pointermove', mv); svg.removeEventListener('pointerup', up); svg.removeEventListener('pointercancel', up); say(spoken(value)); };
+    svg.addEventListener('pointermove', mv); svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up); });
   const check = checkButton(box, () => {
     if (value === q.answer) { svg.classList.add('right'); return succeed(check); }
     knob.classList.add('wrong');
-    miss(null, () => { value = q.answer; knob.setAttribute('cx', X(q.answer)); val.setAttribute('x', X(q.answer)); val.textContent = label(q.answer); svg.classList.add('right'); }, label(q.answer));
+    miss(null, () => { value = q.answer; knob.setAttribute('cx', X(q.answer)); val.setAttribute('x', X(q.answer)); val.textContent = label(q.answer); svg.classList.add('right'); }, spoken(q.answer));
   });
   box.prepend(svg);
 }
@@ -1514,7 +1522,7 @@ $('#parentDone').onclick = () => show('home');
 // ---------- Wiring ----------
 $('#gearBtn').onclick = openParent;
 $('#quitBtn').onclick = () => { speechSynthesis?.cancel(); show('home'); };
-$('#hearBtn').onclick = () => q && say(q.say);
+$('#hearBtn').onclick = () => q && say(q.say, q.touch && q.touch.kind === 'build');
 $('#moreBtn').onclick = () => startQuiz(subject);
 $('#rewardHome').onclick = () => show('home');
 document.addEventListener('gesturestart', e => e.preventDefault()); // no pinch-zoom on iPad
