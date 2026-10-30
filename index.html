@@ -455,6 +455,7 @@
         <ul class="plist" id="chList"></ul>
         <p class="help" id="chEmpty">No channels yet. Search above and switch to “Channels”.</p>
         <label class="field">Only videos marked “made for kids” <input type="checkbox" data-k="kidsOnly"></label>
+        <p class="help">On by default. Creators flag these for children, and YouTube limits ads on them (fewer ads, not always none). Turn off if a channel you trust leaves its videos unflagged.</p>
         <button class="pbtn ghost" id="chRefresh">Refresh videos</button>
         <details class="more">
           <summary>Add a channel by link or @handle</summary>
@@ -498,7 +499,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, grade: 1, reading: true, science: true, mathLevel: 'auto', phonicsLevel: 'auto', readingLevel: 'auto', scienceLevel: 'auto', goal: 5,
-  secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, voice: '', kidsOnly: false,
+  secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, voice: '', kidsOnly: true,
   choresOn: true, choreMode: 'wheel', choresPerDay: 3, choreApproval: true, chores: null };
 const STARTER_CHORES = [
   { e: '🛏️', n: 'Make your bed', m: 3, once: true }, { e: '🧸', n: 'Put toys away', m: 3 }, { e: '🧺', n: 'Clothes in the hamper', m: 2, once: true },
@@ -616,7 +617,9 @@ function renderHome() {
   $('#homeBank').classList.toggle('hidden', !(bank > 0));
   $('#homeBank span').textContent = `${fmt(bank)} of video saved up`;
   let note = '';
-  if (!videoPool().length) note = 'Grown-ups: tap ⚙️ to add YouTube channels or videos.';
+  if (!videoPool().length) note = S.channels.some(ch => (ch.videos || []).length)
+    ? 'Grown-ups: the “made for kids” filter hid every video. Tap ⚙️ to add kid channels or turn it off.'
+    : 'Grown-ups: tap ⚙️ to add YouTube channels or videos.';
   else if (dailyLeft() <= 0) note = 'No more videos today, but you can still play and learn! 🌈';
   if (!opts.length) note = 'Grown-ups: tap ⚙️ and turn on a subject.';
   $('#homeNote').textContent = note;
