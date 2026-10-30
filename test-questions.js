@@ -42,7 +42,7 @@ for (let i = 0; i < N; i++) {
   // Shared rules
   if (new Set(choices.map(String)).size !== choices.length) fail(q, 'Duplicate choices');
   if (choices.filter(c => c === answer).length !== 1) fail(q, 'Answer not in choices exactly once');
-  const want = ['compare', 'evenodd', 'homophone'].includes(q.type) ? 2 : 4;
+  const want = ['compare', 'evenodd', 'homophone', 'cmpfrac'].includes(q.type) ? 2 : 4;
   if (choices.length !== want) fail(q, `Expected ${want} choices`);
   if (!q.say || !q.text || !q.visual) fail(q, 'Missing text');
   if (q.grade !== grade || q.level !== level) fail(q, 'Wrong grade/level tag');
@@ -86,6 +86,26 @@ for (let i = 0; i < N; i++) {
         if ((q.visual.match(/#ff9f1c/g) || []).length !== k || (q.visual.match(/<path/g) || []).length !== d) fail(q, 'Drawn fraction differs');
         for (const c of choices) { const [a, b] = c.split('/').map(Number); if (c !== answer && a / b === k / d) fail(q, 'A wrong choice equals the answer'); }
         break; }
+      case 'tenframe': if (10 - n[0] !== answer || (q.visual.match(/<circle/g) || []).length !== n[0]) fail(q, 'Ten frame wrong'); break;
+      case 'doubles': if (n[0] + n[0] !== answer || (level === 1 && n[0] > 5)) fail(q, 'Doubles wrong'); break;
+      case 'story': {
+        const expect = q.op === 'add' ? n[0] + n[1] : n[0] - n[1];
+        if (expect !== answer || answer < 0) fail(q, 'Story answer wrong');
+        if (level === 1 && Math.max(n[0], n[1], answer) > 20) fail(q, 'Level 1 story numbers too big');
+        const story = data.STORIES.find(st => q.visual.includes(st.e));
+        if (!story || story.op !== q.op) fail(q, 'Story op mismatch');
+        if (!q.say.includes(String(n[0])) || !q.say.includes(String(n[1]))) fail(q, 'Story numbers not in text');
+        break;
+      }
+      case 'array': if (n[0] * n[1] !== answer || (q.visual.match(/<span>/g) || []).length !== answer) fail(q, 'Array count wrong'); break;
+      case 'area': { const [w, h] = n; if ((q.perimeter ? 2 * (w + h) : w * h) !== answer) fail(q, 'Area/perimeter wrong');
+        if ((q.visual.match(/<rect/g) || []).length !== w * h) fail(q, 'Drawn grid differs');
+        if (q.perimeter && level === 1) fail(q, 'Perimeter is level 2'); break; }
+      case 'cmpfrac': { const [k1, n1, k2, n2] = n, v1 = k1 / n1, v2 = k2 / n2;
+        if (v1 === v2) fail(q, 'Fractions are equal');
+        const want = (q.bigger ? Math.max(v1, v2) : Math.min(v1, v2)) === v1 ? `${k1}/${n1}` : `${k2}/${n2}`;
+        if (want !== answer) fail(q, 'Compare fractions wrong');
+        if (level === 1 && !(n1 === n2 || k1 === k2)) fail(q, 'Level 1 fractions should share a top or bottom'); break; }
       default: fail(q, 'Unknown math type');
     }
     if (choices.some(c => typeof c === 'number' && (c < 0 || !Number.isInteger(c)))) fail(q, 'Bad number choice');

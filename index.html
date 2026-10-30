@@ -102,6 +102,13 @@
   .sentence .blank { color: var(--pink); border-bottom: 6px solid var(--pink); }
   .visual svg.clock, .visual svg.fraction { width: 230px; height: 230px; }
   .visual svg.coins { height: 110px; }
+  .visual svg.tenframe { width: 320px; height: 134px; }
+  .visual svg.area { width: auto; max-width: 100%; }
+  .story { font-size: clamp(26px, 3.6vw, 36px); font-weight: 600; line-height: 1.35; text-align: left; padding: 0 12px; max-width: 700px; }
+  .story .em { font-size: 64px; display: block; text-align: center; margin-bottom: 8px; }
+  .pair { display: flex; gap: 40px; align-items: center; justify-content: center; }
+  .pair svg { width: 170px; height: 170px; display: block; }
+  .pair b { display: block; text-align: center; font-size: 36px; margin-top: 6px; }
   .count { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px 14px; font-size: 62px; }
   .prompt { font-size: 34px; font-weight: 600; margin-top: 8px; }
   .choices { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
@@ -387,7 +394,7 @@
   </div>
 </section>
 
-<script src="questions.js?v=4"></script>
+<script src="questions.js?v=5"></script>
 <script>
 // ---------- Storage ----------
 const $ = s => document.querySelector(s);
@@ -497,9 +504,9 @@ function renderHome() {
 }
 
 const GRADE_INFO = {
-  1: 'Math: adding and taking away to 20, counting, bigger/smaller, telling time to the half hour. Reading: letter sounds, short words, rhymes, sight words.',
-  2: 'Math: adding and subtracting to 100, skip counting, tens and ones, even/odd, time to 5 minutes, counting coins. Reading: blends like sh/ch/tr, long vowels, plurals, compound words, contractions, syllables.',
-  3: 'Math: times tables and division, adding and subtracting to 1,000, rounding, fractions, time to the minute. Reading: opposites and synonyms, spelling, prefixes, past tense, irregular plurals, homophones.',
+  1: 'Math: adding and taking away to 20, doubles, ten frames, counting, bigger/smaller, telling time to the half hour. Reading: letter sounds, short words, rhymes, sight words.',
+  2: 'Math: adding and subtracting to 100, word problems, rows and columns, skip counting, tens and ones, even/odd, time to 5 minutes, counting coins. Reading: blends like sh/ch/tr, long vowels, plurals, compound words, contractions, syllables.',
+  3: 'Math: times tables and division, adding and subtracting to 1,000, rounding, fractions and comparing them, area and perimeter, time to the minute. Reading: opposites and synonyms, spelling, prefixes, past tense, irregular plurals, homophones.',
 };
 // ---------- Levels ----------
 // Each subject has a level that can grow with the child when the parent picks "Grows with your child".

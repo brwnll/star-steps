@@ -81,6 +81,22 @@
     return `<svg viewBox="0 0 200 200" class="fraction" aria-hidden="true">${parts.join('')}</svg>`;
   }
 
+  function tenFrameSvg(k) {
+    const cells = [];
+    for (let i = 0; i < 10; i++) {
+      const x = (i % 5) * 60 + 5, y = Math.floor(i / 5) * 60 + 5;
+      cells.push(`<rect x="${x}" y="${y}" width="60" height="60" fill="#fff" stroke="#2b2250" stroke-width="4"/>`);
+      if (i < k) cells.push(`<circle cx="${x + 30}" cy="${y + 30}" r="20" fill="#ff5c9a"/>`);
+    }
+    return `<svg viewBox="0 0 310 130" class="tenframe" aria-hidden="true">${cells.join('')}</svg>`;
+  }
+  function gridSvg(w, h) {
+    const cells = [];
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) cells.push(`<rect x="${c * 40 + 4}" y="${r * 40 + 4}" width="40" height="40" fill="#ffd23f" stroke="#2b2250" stroke-width="3"/>`);
+    return `<svg viewBox="0 0 ${w * 40 + 8} ${h * 40 + 8}" class="area" style="height:${Math.min(220, h * 40 + 20)}px" aria-hidden="true">${cells.join('')}</svg>`;
+  }
+  const arrayHtml = (emoji, r, c) => `<div class="count" style="grid-template-columns:repeat(${c}, 1fr);max-width:${c * 70}px;margin:auto">${`<span>${emoji}</span>`.repeat(r * c)}</div>`;
+
   // ---------- Grade 1 math ----------
   const COUNT_ITEMS = [
     ['🍎', 'apples'], ['⭐', 'stars'], ['🐞', 'ladybugs'], ['🎈', 'balloons'], ['🐟', 'fish'],
@@ -116,6 +132,16 @@
         text: `Which number is ${bigger ? 'BIGGER' : 'SMALLER'}?`, say: `Which number is ${bigger ? 'bigger' : 'smaller'}?`,
         choices: shuffle([a, b]), answer: ans };
     },
+    tenframe() {
+      const k = rand(1, 9), ans = 10 - k;
+      return { key: `tf${k}`, n: [k], visual: tenFrameSvg(k), text: 'How many more to make 10?',
+        say: `There are ${k} dots. How many more dots make 10?`, choices: numberChoices(ans, 10), answer: ans };
+    },
+    doubles(max) {
+      const a = rand(1, max === 10 ? 5 : 10), ans = a + a;
+      return { key: `dbl${a}`, n: [a], visual: eq(`${a} + ${a} = <span class="q">?</span>`), text: 'Doubles!',
+        say: `What is ${a} plus ${a}? Double it!`, choices: numberChoices(ans, 22, [-2, 2, -1, 1, -4, 4, a]), answer: ans };
+    },
     // Hour and half hour.
     clock() {
       const h = rand(1, 12), m = pick([0, 30]), ans = `${h}:${m === 0 ? '00' : '30'}`;
@@ -128,7 +154,37 @@
   };
 
   // ---------- Grade 2 math ----------
+  // Word problems. {a} and {b} are filled in; `op` says how the answer is made.
+  const STORIES = [
+    { op: 'add', e: '🍪', s: '{name} had {a} cookies. Mom baked {b} more. How many cookies now?' },
+    { op: 'add', e: '🐟', s: '{name} saw {a} fish. Then {b} more swam by. How many fish in all?' },
+    { op: 'add', e: '🚗', s: 'There were {a} cars in the lot. {b} more parked. How many cars now?' },
+    { op: 'add', e: '📚', s: '{name} read {a} pages, then {b} more. How many pages in all?' },
+    { op: 'sub', e: '🎈', s: '{name} had {a} balloons. {b} flew away. How many are left?' },
+    { op: 'sub', e: '🍎', s: 'There were {a} apples. {name} ate {b}. How many are left?' },
+    { op: 'sub', e: '🐦', s: '{a} birds sat on a wire. {b} flew off. How many stayed?' },
+    { op: 'sub', e: '🧁', s: '{name} baked {a} cupcakes and gave away {b}. How many are left?' },
+    { op: 'diff', e: '⭐', s: '{name} has {a} stickers. Jo has {b}. How many more does {name} have?' },
+    { op: 'diff', e: '🐚', s: '{name} found {a} shells. Max found {b}. How many more did {name} find?' },
+  ];
+  const NAMES = ['Sam', 'Mia', 'Leo', 'Ava', 'Ben', 'Zoe', 'Eli', 'Nia', 'Kai', 'Ruby'];
   const math2 = {
+    story(level) {
+      const st = pick(STORIES), name = pick(NAMES), max = level === 1 ? 20 : 100;
+      let a, b;
+      if (st.op === 'add') { a = rand(2, max - 2); b = rand(1, max - a); }
+      else { a = rand(3, max); b = rand(1, a - 1); }
+      const ans = st.op === 'add' ? a + b : a - b;
+      const text = st.s.replace(/{name}/g, name).replace('{a}', a).replace('{b}', b);
+      return { key: `story${st.e}${a}_${b}`, n: [a, b], op: st.op, visual: `<div class="story"><span class="em">${st.e}</span>${esc(text)}</div>`,
+        text: 'Read the story!', say: text, choices: numberChoices(ans, max + 5, level === 1 ? undefined : BIG_DELTAS), answer: ans };
+    },
+    array() {
+      const r = rand(2, 5), c = rand(2, 5), ans = r * c, [emoji] = pick(COUNT_ITEMS);
+      const wrong = new Set([r + c, ans + r, ans - r, ans + c, ans - c, ans + 1, ans - 1].filter(v => v > 0 && v !== ans));
+      return { key: `arr${r}x${c}${emoji}`, n: [r, c], visual: arrayHtml(emoji, r, c), text: `${r} rows of ${c}. How many in all?`,
+        say: `There are ${r} rows with ${c} in each row. How many in all?`, choices: shuffle([ans, ...threeWrong(ans, wrong, [ans + 2, ans + 3])]), answer: ans };
+    },
     // level 1: no carrying; level 2: sums to 100 with carrying.
     add(level) {
       let a, b;
@@ -195,7 +251,6 @@
     },
   };
 
-  // ---------- Grade 3 math ----------
   const math3 = {
     mult(level) {
       const a = pick(level === 1 ? [2, 5, 10, 1, 0, 3] : [2, 3, 4, 5, 6, 7, 8, 9, 10]), b = rand(0, 10), ans = a * b;
@@ -248,6 +303,29 @@
       const ok = [...wrong].filter(f => { const [a, b] = f.split('/').map(Number); return a > 0 && b > a && a / b !== k / n; });
       return { key: `frac${k}/${n}`, n: [k, n], visual: fractionSvg(k, n), text: 'What fraction is orange?',
         say: `What fraction of the circle is orange?`, choices: shuffle([ans, ...threeWrong(ans, ok, [`${k}/${n + 3}`, `${k + 1}/${n + 3}`, `${k}/${n + 4}`])]), answer: ans, choiceClass: 'word' };
+    },
+    area(level) {
+      const w = rand(2, 6), h = rand(2, 5), perimeter = level === 2 && Math.random() < 0.5;
+      const ans = perimeter ? 2 * (w + h) : w * h;
+      const wrong = new Set([w * h, 2 * (w + h), w + h, ans + 1, ans - 1, ans + 2, ans + w].filter(v => v > 0 && v !== ans));
+      return { key: `area${w}x${h}${perimeter ? 'p' : 'a'}`, n: [w, h], perimeter, visual: gridSvg(w, h),
+        text: perimeter ? 'How many units around the outside?' : 'How many squares inside?',
+        say: perimeter ? `The rectangle is ${w} wide and ${h} tall. What is the distance around the outside?` : `How many squares are inside the rectangle?`,
+        choices: shuffle([ans, ...threeWrong(ans, wrong, [ans + 3, ans + 4])]), answer: ans };
+    },
+    cmpfrac(level) {
+      let k1, n1, k2, n2;
+      do {
+        if (level === 1 && Math.random() < 0.5) { n1 = n2 = pick([2, 3, 4, 5, 6, 8]); k1 = rand(1, n1 - 1); k2 = rand(1, n1 - 1); }
+        else if (level === 1) { k1 = k2 = rand(1, 2); n1 = pick([2, 3, 4, 6, 8]); n2 = pick([2, 3, 4, 6, 8]); }
+        else { n1 = pick([2, 3, 4, 5, 6, 8]); n2 = pick([2, 3, 4, 5, 6, 8]); k1 = rand(1, n1 - 1); k2 = rand(1, n2 - 1); }
+      } while (k1 / n1 === k2 / n2 || k1 >= n1 || k2 >= n2);
+      const bigger = Math.random() < 0.5, f1 = `${k1}/${n1}`, f2 = `${k2}/${n2}`;
+      const ans = (k1 / n1 > k2 / n2) === bigger ? f1 : f2;
+      return { key: `cf${f1}v${f2}${bigger}`, n: [k1, n1, k2, n2], bigger,
+        visual: `<div class="pair"><div>${fractionSvg(k1, n1)}<b>${f1}</b></div><div>${fractionSvg(k2, n2)}<b>${f2}</b></div></div>`,
+        text: `Which fraction is ${bigger ? 'BIGGER' : 'SMALLER'}?`, say: `Which fraction is ${bigger ? 'bigger' : 'smaller'}?`,
+        choices: [f1, f2], answer: ans, choiceClass: 'word' };
     },
     clock() {
       const h = rand(1, 12), m = rand(0, 59), t = (hh, mm) => `${(hh + 11) % 12 + 1}:${String((mm + 60) % 60).padStart(2, '0')}`, ans = t(h, m);
@@ -497,9 +575,9 @@
   // Which question types each grade and level serves. Level 2 adds the harder ones.
   const MIX = {
     math: {
-      1: { 1: ['add', 'add', 'sub', 'count', 'count', 'compare', 'clock'], 2: ['add', 'add', 'sub', 'sub', 'count', 'missing', 'compare', 'clock'] },
-      2: { 1: ['add', 'add', 'sub', 'skip', 'place', 'evenodd', 'compare', 'clock'], 2: ['add', 'sub', 'sub', 'skip', 'place', 'clock', 'money', 'money', 'evenodd'] },
-      3: { 1: ['mult', 'mult', 'div', 'add', 'round', 'fraction', 'clock'], 2: ['mult', 'div', 'factor', 'add', 'sub', 'round', 'fraction', 'clock'] },
+      1: { 1: ['add', 'add', 'sub', 'count', 'compare', 'clock', 'tenframe', 'doubles'], 2: ['add', 'sub', 'sub', 'count', 'missing', 'compare', 'clock', 'tenframe', 'doubles'] },
+      2: { 1: ['add', 'sub', 'skip', 'place', 'evenodd', 'compare', 'clock', 'story', 'story', 'array'], 2: ['add', 'sub', 'skip', 'place', 'clock', 'money', 'evenodd', 'story', 'story', 'array'] },
+      3: { 1: ['mult', 'mult', 'div', 'add', 'round', 'fraction', 'clock', 'area', 'cmpfrac'], 2: ['mult', 'div', 'factor', 'add', 'sub', 'round', 'fraction', 'clock', 'area', 'cmpfrac'] },
     },
     phonics: {
       1: { 1: ['begin', 'begin', 'begin', 'sight', 'sight', 'cvc'], 2: ['begin', 'begin', 'cvc', 'cvc', 'rhyme', 'sight', 'sight'] },
@@ -524,7 +602,7 @@
     return Object.assign(q, { subject: s, grade, level, type, key: `g${grade}${q.key}` });
   }
 
-  const api = { generate, LEVEL_NAMES, MIX, data: { PICS, CVC, RHYMES, SIGHT, LETTERS, SAME_SOUND, COINS, BLENDS, LONG, PLURALS, COMPOUNDS,
+  const api = { generate, LEVEL_NAMES, MIX, data: { PICS, CVC, RHYMES, SIGHT, LETTERS, SAME_SOUND, COINS, STORIES, BLENDS, LONG, PLURALS, COMPOUNDS,
     CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES, SOUND_ALIKE } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Questions = api;
