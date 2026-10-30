@@ -66,6 +66,7 @@
   .subject:nth-child(3) { background: var(--teal); transform: rotate(-1deg); }
   .subject:nth-child(4) { background: var(--green); transform: rotate(2deg); }
   .subject:nth-child(5) { background: var(--purple); transform: rotate(-2deg); }
+  .subject:nth-child(6) { background: var(--blue); transform: rotate(1deg); }
   .note { font-size: 20px; background: rgba(255,255,255,.8); padding: 12px 20px; border-radius: 16px; margin-top: 4vh; max-width: 640px; text-align: center; }
   .note:empty { display: none; }
   .install { display: flex; gap: 14px; align-items: center; background: #fff; border-radius: 22px; padding: 12px 16px; margin-top: 16px;
@@ -170,6 +171,31 @@
   .timer i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--pink), var(--orange), var(--yellow), var(--green), var(--blue)); border-radius: 999px; transition: width 1s linear; }
   .timer b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; text-shadow: 0 2px 0 rgba(0,0,0,.4); }
   .watchbar .big { padding: 14px 24px; font-size: 24px; }
+
+  /* Chores */
+  h2.small { font-size: 36px; margin: 0; }
+  .wheelwrap { position: relative; width: min(70vw, 420px); margin: 0 auto 18px; }
+  .wheelwrap svg { width: 100%; display: block; filter: drop-shadow(0 10px 0 rgba(43,34,80,.18)); }
+  .wheelwrap .pointer { position: absolute; top: -26px; left: 50%; transform: translateX(-50%); font-size: 44px; color: var(--pink); z-index: 2;
+    text-shadow: 0 3px 0 rgba(0,0,0,.2); }
+  #wheel g.spin { transition: transform 4.2s cubic-bezier(.12, .7, .08, 1); }
+  #wheel text { font-size: 18px; pointer-events: none; }
+  .pickgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%; max-width: 760px; }
+  .pickgrid button { background: #fff; border-radius: 22px; padding: 14px 8px; font-size: 20px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .pickgrid button .em { font-size: 54px; line-height: 1; }
+  .pickgrid button small { color: var(--purple); font-weight: 700; }
+  .chorecard { max-width: 640px; }
+  .chorecard .pic { font-size: 120px; animation: none; }
+  .earns { font-size: 26px; font-weight: 600; color: var(--purple); margin-top: 6px; }
+  .chorecard .row { margin-top: 18px; }
+  .big.green { background: var(--green); } .big.gray { background: #cfc9e6; color: var(--ink); }
+  .chorelist li { flex-wrap: wrap; }
+  .chorelist input[type=text] { font: inherit; font-size: 17px; padding: 8px 10px; border-radius: 10px; border: 2px solid #ddd; }
+  .chorelist .emo { width: 56px; text-align: center; font-size: 22px; }
+  .chorelist .nm { flex: 1; min-width: 140px; }
+  .chorelist select { font: inherit; font-size: 16px; padding: 8px; border-radius: 10px; border: 2px solid #ddd; background: #fff; }
+  .chorelist label.once { font-size: 15px; display: flex; align-items: center; gap: 4px; }
+  .chorelist label.once input { width: 22px; height: 22px; }
 
   /* Parent area */
   #parent { background: #f4f2fb; overflow-y: auto; display: none; align-items: stretch; -webkit-user-select: text; user-select: text; }
@@ -287,6 +313,29 @@
   </div>
 </section>
 
+<!-- CHORES -->
+<section id="chores" class="screen">
+  <div class="topbar">
+    <button class="iconbtn chunky" id="choreHome" aria-label="Home">🏠</button>
+    <h2 class="small">🧹 Chores</h2>
+    <div class="iconbtn" style="visibility:hidden"></div>
+  </div>
+  <div class="stage">
+    <div id="choreSpin">
+      <div class="wheelwrap"><div class="pointer">▼</div><svg id="wheel" viewBox="-100 -100 200 200"></svg></div>
+      <button class="big chunky" id="spinBtn">🎡 Spin!</button>
+    </div>
+    <div id="chorePick" class="pickgrid hidden"></div>
+    <div class="card chorecard hidden" id="choreCard">
+      <div class="pic" id="choreEmoji"></div>
+      <div class="prompt" id="choreName"></div>
+      <div class="earns" id="choreEarns"></div>
+      <div class="row" id="choreActions"></div>
+    </div>
+    <p class="note" id="choreNote"></p>
+  </div>
+</section>
+
 <!-- REWARD -->
 <section id="reward" class="screen">
   <h2 id="rewardTitle">You did it! 🎉</h2>
@@ -342,6 +391,21 @@
         <label class="field">Voice <span><select id="voiceSel"></select> <button class="pbtn ghost" id="voiceTry" style="margin:0;padding:8px 12px">🔊 Try it</button></span></label>
         <p class="help"><span id="voiceNow"></span> For a much nicer voice on iPad: Settings → Accessibility → Spoken Content → Voices → English → pick
           a voice like <b>Ava</b> or <b>Samantha</b> and download the <b>Enhanced</b> or <b>Premium</b> version. It then shows up here with a ★.</p>
+      </div>
+
+      <div class="panel">
+        <h4>🧹 Chores</h4>
+        <p class="help">Chores earn video minutes too. Your child spins the wheel (or picks), does the chore, taps Done, and then you approve it with the grown-ups question.</p>
+        <label class="field">Chores on <input type="checkbox" data-k="choresOn"></label>
+        <label class="field">How the chore is chosen
+          <select data-k="choreMode"><option value="wheel">Spin the wheel</option><option value="pick">Child picks from the list</option></select></label>
+        <label class="field">Chores per day
+          <select data-k="choresPerDay" data-num><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>8</option></select></label>
+        <label class="field">A grown-up must approve each chore <input type="checkbox" data-k="choreApproval"></label>
+        <p class="help" id="choreToday"></p>
+        <ul class="plist chorelist" id="choreList"></ul>
+        <button class="pbtn" id="choreAdd">Add a chore</button>
+        <button class="pbtn ghost" id="choreReset">Starter list</button>
       </div>
 
       <div class="panel">
@@ -426,9 +490,17 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, grade: 1, reading: true, science: true, mathLevel: 'auto', phonicsLevel: 'auto', readingLevel: 'auto', scienceLevel: 'auto', goal: 5,
-  secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, voice: '', kidsOnly: false };
+  secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, voice: '', kidsOnly: false,
+  choresOn: true, choreMode: 'wheel', choresPerDay: 3, choreApproval: true, chores: null };
+const STARTER_CHORES = [
+  { e: '🛏️', n: 'Make your bed', m: 3, once: true }, { e: '🧸', n: 'Put toys away', m: 3 }, { e: '🧺', n: 'Clothes in the hamper', m: 2, once: true },
+  { e: '🐾', n: 'Feed a pet', m: 3, once: true }, { e: '🪴', n: 'Water a plant', m: 2, once: true }, { e: '👟', n: 'Shoes by the door', m: 1 },
+  { e: '🍽️', n: 'Set the table', m: 5, once: true }, { e: '🧽', n: 'Wipe the table', m: 3 }, { e: '♻️', n: 'Take out recycling', m: 5, once: true },
+  { e: '📚', n: 'Tidy the bookshelf', m: 5 }, { e: '🧹', n: 'Sweep a room', m: 5 }, { e: '🧦', n: 'Sort the laundry', m: 5 },
+];
 const S = Object.assign({}, DEFAULTS, store.get('ss.settings', {}));
 if (S.mathLevel == 10) S.mathLevel = '1'; else if (S.mathLevel == 20) S.mathLevel = '2';
+if (!Array.isArray(S.chores)) S.chores = STARTER_CHORES.map(c => ({ ...c }));
 const save = () => store.set('ss.settings', S);
 
 const pick = a => a[Math.floor(Math.random() * a.length)];
@@ -523,11 +595,12 @@ function renderHome() {
   if (S.reading) opts.push(['reading', '📖', 'Reading']);
   if (S.science) opts.push(['science', '🔬', 'Science']);
   if (opts.length > 1) opts.push(['mix', '🎲', 'Mix it up']);
+  if (S.choresOn) opts.push(['chores', '🧹', 'Chores']);
   for (const [k, em, label] of opts) {
     const b = document.createElement('button');
     b.className = 'subject chunky';
     b.innerHTML = `<span class="em">${em}</span>${label}`;
-    b.onclick = () => startQuiz(k);
+    b.onclick = () => k === 'chores' ? openChores() : startQuiz(k);
     box.append(b);
   }
   const bank = playable();
@@ -945,9 +1018,96 @@ async function refreshChannels(force) {
   save();
 }
 
+// ---------- Chores ----------
+// One chore at a time, saved in ss.chore: { i, state: 'doing' | 'pending' }. Approved chores go to ss.choreLog by day.
+const choreLog = () => store.get('ss.choreLog', []).filter(x => x.date === today());
+const choreDoneToday = c => choreLog().some(x => x.n === c.n);
+const choresLeftToday = () => Math.max(0, S.choresPerDay - choreLog().length);
+const availableChores = () => S.chores.filter(c => c.n.trim() && !(c.once && choreDoneToday(c)));
+const WHEEL_COLORS = ['#ff5c9a', '#ff9f1c', '#ffd23f', '#2ec27e', '#3aa0ff', '#7c5cff', '#1fc8c8', '#ff7f50'];
+let wheelTurn = 0, spinning = false;
+
+function openChores() {
+  show('chores'); $('#choreCard').classList.add('hidden'); $('#choreSpin').classList.add('hidden'); $('#chorePick').classList.add('hidden');
+  $('#choreNote').textContent = '';
+  const cur = store.get('ss.chore', null);
+  if (cur && S.chores[cur.i]) return showChore(cur.i, cur.state);
+  const list = availableChores();
+  if (!choresLeftToday()) { $('#choreNote').textContent = `All ${S.choresPerDay} chores done today! 🎉 Come back tomorrow.`; say('All your chores are done today! Great job!'); return; }
+  if (!list.length) { $('#choreNote').textContent = 'No chores left today. 🎉'; return; }
+  if (S.choreMode === 'pick') {
+    const box = $('#chorePick'); box.innerHTML = ''; box.classList.remove('hidden');
+    list.forEach(c => { const b = document.createElement('button'); b.className = 'chunky'; b.innerHTML = `<span class="em">${c.e}</span>${esc(c.n)}<small>${c.m} min</small>`;
+      b.onclick = () => { sfx.tap(); startChore(S.chores.indexOf(c)); }; box.append(b); });
+    say('Pick a chore!');
+  } else {
+    drawWheel(list); $('#choreSpin').classList.remove('hidden'); say('Spin the wheel!');
+  }
+}
+function drawWheel(list) {
+  const n = list.length, g = [], step = 360 / n;
+  list.forEach((c, i) => {
+    const a0 = (i * step - 90) * Math.PI / 180, a1 = ((i + 1) * step - 90) * Math.PI / 180, mid = ((i + 0.5) * step - 90) * Math.PI / 180;
+    const path = n === 1 ? `M0 -96 A96 96 0 1 1 -0.01 -96 Z` : `M0 0 L${Math.cos(a0) * 96} ${Math.sin(a0) * 96} A96 96 0 ${step > 180 ? 1 : 0} 1 ${Math.cos(a1) * 96} ${Math.sin(a1) * 96} Z`;
+    g.push(`<path d="${path}" fill="${WHEEL_COLORS[i % WHEEL_COLORS.length]}" stroke="#fff" stroke-width="3"/>`);
+    g.push(`<text x="${Math.cos(mid) * 62}" y="${Math.sin(mid) * 62 + 7}" text-anchor="middle" font-size="${n > 8 ? 16 : 22}">${c.e}</text>`);
+  });
+  $('#wheel').innerHTML = `<g id="wheelG" class="spin" style="transform:rotate(${wheelTurn}deg)">${g.join('')}</g><circle r="14" fill="#fff" stroke="#2b2250" stroke-width="4"/>`;
+}
+$('#spinBtn').onclick = () => {
+  if (spinning) return;
+  const list = availableChores(); if (!list.length) return openChores();
+  spinning = true; sfx.tap();
+  const idx = Math.floor(Math.random() * list.length), step = 360 / list.length;
+  // Land the pointer (top) on the middle of slice idx, after a few full turns.
+  const target = 360 * 5 + (360 - (idx + 0.5) * step) + (Math.random() - 0.5) * step * 0.6;
+  wheelTurn = (wheelTurn - wheelTurn % 360) + target;
+  const g = $('#wheelG'); g.style.transform = `rotate(${wheelTurn}deg)`;
+  const tick = setInterval(() => tones([700 + Math.random() * 200], 0.03), 140);
+  setTimeout(() => { clearInterval(tick); spinning = false; sfx.right(); startChore(S.chores.indexOf(list[idx])); }, 4300);
+};
+function startChore(i) { store.set('ss.chore', { i, state: 'doing' }); showChore(i, 'doing'); }
+function showChore(i, state) {
+  const c = S.chores[i];
+  $('#choreSpin').classList.add('hidden'); $('#chorePick').classList.add('hidden'); $('#choreCard').classList.remove('hidden');
+  $('#choreEmoji').textContent = c.e; $('#choreName').textContent = c.n; $('#choreEarns').textContent = `Earns ${c.m} minute${c.m === 1 ? '' : 's'} of video 📺`;
+  const acts = $('#choreActions'); acts.innerHTML = '';
+  const btn = (label, cls, fn) => { const b = document.createElement('button'); b.className = 'big chunky ' + cls; b.textContent = label; b.onclick = fn; acts.append(b); };
+  if (state === 'doing') {
+    say(`Your chore is: ${c.n}. Tap Done when you finish!`);
+    btn('✅ Done!', 'green', () => { sfx.tap(); S.choreApproval ? setPending(i) : payChore(i); });
+  } else if (state === 'pending') {
+    $('#choreEarns').textContent = 'Waiting for a grown-up to check ✋';
+    btn('✋ Grown-up check', '', () => askGrownUp(() => { show('chores'); showChore(i, 'approve'); }));
+    btn('🏠 Later', 'gray', () => show('home'));
+  } else if (state === 'approve') {
+    $('#choreEarns').textContent = 'Grown-up: is it done?';
+    btn('👍 Approve', 'green', () => payChore(i));
+    btn('↩️ Not yet', 'gray', () => { store.set('ss.chore', { i, state: 'doing' }); showChore(i, 'doing'); });
+    btn('🗑️ Skip it', 'gray', () => { store.set('ss.chore', null); openChores(); });
+  }
+}
+function setPending(i) { store.set('ss.chore', { i, state: 'pending' }); showChore(i, 'pending'); say('Great! Now ask a grown-up to check it.'); }
+function payChore(i) {
+  const c = S.chores[i];
+  setBank(getBank() + c.m * 60);
+  store.set('ss.choreLog', [...store.get('ss.choreLog', []).filter(x => x.date === today()), { date: today(), n: c.n, m: c.m }]);
+  store.set('ss.chore', null);
+  confetti(30); sfx.win(); say(`${c.n}, done! You earned ${c.m} minute${c.m === 1 ? '' : 's'} of video!`);
+  $('#choreEarns').textContent = `+${c.m} minute${c.m === 1 ? '' : 's'} of video! 🎉`;
+  const acts = $('#choreActions'); acts.innerHTML = '';
+  const b1 = document.createElement('button'); b1.className = 'big chunky'; b1.textContent = choresLeftToday() ? '🎡 Another chore' : '🏠 Home';
+  b1.onclick = () => choresLeftToday() ? openChores() : show('home'); acts.append(b1);
+  if (playable() > 0 && videoPool().length) { const b2 = document.createElement('button'); b2.className = 'big alt chunky'; b2.textContent = '📺 Watch a video'; b2.onclick = () => showReward('Chore done! 🧹'); acts.append(b2); }
+}
+$('#choreHome').onclick = () => { speechSynthesis?.cancel(); show('home'); };
+
 // ---------- Parent area ----------
-let gateAnswer = 0;
-function openParent() {
+let gateAnswer = 0, gateNext = null;
+function openParent() { askGrownUp(() => { $('#gate').classList.add('hidden'); $('#settings').classList.remove('hidden'); renderParent(); }); }
+// Shows the grown-ups math question; runs `next` when it's answered right.
+function askGrownUp(next) {
+  gateNext = next; speechSynthesis?.cancel();
   show('parent');
   $('#gate').classList.remove('hidden'); $('#settings').classList.add('hidden');
   const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
@@ -955,9 +1115,8 @@ function openParent() {
   $('#gateInput').value = ''; $('#gateMsg').textContent = '';
 }
 $('#gateGo').onclick = () => {
-  if (Number($('#gateInput').value) === gateAnswer) {
-    $('#gate').classList.add('hidden'); $('#settings').classList.remove('hidden'); renderParent();
-  } else { $('#gateMsg').textContent = 'Not quite — try again.'; openParent(); }
+  if (Number($('#gateInput').value) === gateAnswer) gateNext();
+  else { $('#gateMsg').textContent = 'Not quite — try again.'; const n = gateNext; askGrownUp(n); }
 };
 $('#gateInput').onkeydown = e => { if (e.key === 'Enter') $('#gateGo').click(); };
 
@@ -987,6 +1146,7 @@ function renderParent() {
     <div class="grow">${esc(v.title)}<small>${esc(v.channel || '')}</small></div>
     <button class="x" data-vid="${i}">Remove</button></li>`).join('');
   $('#chEmpty').classList.toggle('hidden', S.channels.length > 0);
+  renderChores();
   $('#vidEmpty').classList.toggle('hidden', S.videos.length > 0);
   renderResults();
 }
@@ -1101,7 +1261,26 @@ $('#vidAdd').onclick = async () => {
   save(); $('#vidInput').value = ''; renderParent();
   status(st, `Added ${added} video${added === 1 ? '' : 's'}.` + (bad ? ` ${bad} link${bad === 1 ? '' : 's'} didn't look like YouTube videos.` : ''), bad > 0);
 };
-$('#resetToday').onclick = () => { store.set('ss.daily', {}); renderParent(); };
+function renderChores() {
+  const MINS = [1, 2, 3, 5, 10, 15];
+  $('#choreList').innerHTML = S.chores.map((c, i) => `<li>
+    <input type="text" class="emo" data-ci="${i}" data-f="e" value="${esc(c.e)}" maxlength="4" aria-label="Emoji">
+    <input type="text" class="nm" data-ci="${i}" data-f="n" value="${esc(c.n)}" placeholder="Chore" aria-label="Chore">
+    <select data-ci="${i}" data-f="m">${MINS.map(m => `<option value="${m}" ${m === c.m ? 'selected' : ''}>${m} min</option>`).join('')}</select>
+    <label class="once"><input type="checkbox" data-ci="${i}" data-f="once" ${c.once ? 'checked' : ''}> once a day</label>
+    <button class="x" data-cdel="${i}">Remove</button></li>`).join('');
+  const log = choreLog();
+  $('#choreToday').textContent = log.length ? `Today: ${log.map(x => `${x.n} (${x.m} min)`).join(', ')} = ${log.reduce((a, x) => a + x.m, 0)} min.` : 'No chores approved today yet.';
+}
+$('#choreList').onchange = e => {
+  const i = +e.target.dataset.ci, f = e.target.dataset.f; if (isNaN(i)) return;
+  S.chores[i][f] = f === 'once' ? e.target.checked : f === 'm' ? +e.target.value : e.target.value.trim(); save();
+  if (f !== 'n' && f !== 'e') renderChores();
+};
+$('#choreList').onclick = e => { const i = e.target.dataset.cdel; if (i != null) { S.chores.splice(+i, 1); save(); renderChores(); } };
+$('#choreAdd').onclick = () => { S.chores.push({ e: '⭐', n: '', m: 3 }); save(); renderChores(); $('#choreList .nm:last-of-type')?.focus(); };
+$('#choreReset').onclick = () => { S.chores = STARTER_CHORES.map(c => ({ ...c })); save(); renderChores(); };
+$('#resetToday').onclick = () => { store.set('ss.daily', {}); store.set('ss.choreLog', []); store.set('ss.chore', null); renderParent(); };
 $('#resetBank').onclick = () => { setBank(0); store.set('ss.resume', null); renderParent(); };
 $('#parentDone').onclick = () => show('home');
 
