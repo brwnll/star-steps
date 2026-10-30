@@ -156,8 +156,9 @@
     place() {
       const tens = rand(1, 9), ones = rand(0, 9), num = tens * 10 + ones;
       if (Math.random() < 0.5) {
-        return { key: `place${num}`, n: [tens, ones], placeType: 'build', visual: big(`${tens} tens and ${ones} ones`),
-          text: 'What number is this?', say: `${tens} tens and ${ones} ones. What number is that?`,
+        const words = `${tens} ${tens === 1 ? 'ten' : 'tens'} and ${ones} ${ones === 1 ? 'one' : 'ones'}`;
+        return { key: `place${num}`, n: [tens, ones], placeType: 'build', visual: big(words),
+          text: 'What number is this?', say: `${words}. What number is that?`,
           choices: shuffle([num, ...[...new Set([ones * 10 + tens, tens + ones, num + 10, num + 1, num - 1].filter(v => v !== num))].slice(0, 3)]),
           answer: num };
       }
@@ -176,8 +177,8 @@
       const t = (hh, mm) => `${hh}:${String(mm).padStart(2, '0')}`, ans = t(h, m);
       const wrong = new Set();
       const add = (hh, mm) => { hh = (hh + 11) % 12 + 1; mm = (mm + 60) % 60; const s = t(hh, mm); if (s !== ans) wrong.add(s); };
-      add(m / 5, (h % 12) * 5); // hands swapped
-      add(h + 1, m); add(h - 1, m); add(h, m + (level === 1 ? 15 : 5)); add(h, m - (level === 1 ? 15 : 5)); add(h, (m + 30) % 60);
+      if (level === 2) add(m / 5, (h % 12) * 5); // hands swapped
+      add(h + 1, m); add(h + 2, m); add(h + 3, m); add(h - 1, m); add(h, m + (level === 1 ? 15 : 5)); add(h, m - (level === 1 ? 15 : 5)); add(h, (m + 30) % 60);
       return { key: `clock2_${ans}`, n: [h, m], visual: clockSvg(h, m), text: 'What time is it?', say: 'What time does the clock show?',
         choices: shuffle([ans, ...pickN([...wrong], 3)]), answer: ans, choiceClass: 'word' };
     },
@@ -189,7 +190,7 @@
       const ans = list.reduce((s, c) => s + COINS[c], 0);
       const cents = v => `${v}¢`;
       return { key: `money${list.join('')}`, n: list.map(c => COINS[c]), visual: coinsSvg(list), text: 'How much money?',
-        say: `How much money is this? ${list.join(', ')}.`,
+        say: 'How much money is this? Add up the coins.',
         choices: numberChoices(ans, 130, [-5, 5, -10, 10, -1, 1, -25, 25]).map(cents), answer: cents(ans), choiceClass: 'word' };
     },
   };
@@ -232,7 +233,7 @@
     },
     round(level) {
       const to = level === 1 ? 10 : 100, n = level === 1 ? rand(11, 99) : rand(101, 999);
-      if (n % to === to / 2 && Math.random() < 0.5) return math3.round(level); // halves are rare but fine: round half up
+      if (n % to === 0) return math3.round(level); // already round; try again
       const ans = Math.round(n / to) * to;
       const wrong = new Set([ans - to, ans + to, Math.floor(n / to) * to, Math.ceil(n / to) * to, n, ans + 2 * to].filter(v => v >= 0 && v !== ans));
       return { key: `round${to}_${n}`, n: [n, to], visual: big(String(n)), text: `Round ${n} to the nearest ${to}.`,
@@ -250,7 +251,7 @@
     },
     clock() {
       const h = rand(1, 12), m = rand(0, 59), t = (hh, mm) => `${(hh + 11) % 12 + 1}:${String((mm + 60) % 60).padStart(2, '0')}`, ans = t(h, m);
-      const wrong = new Set([t(h + 1, m), t(h - 1, m), t(h, m + 1), t(h, m - 1), t(h, m + 5), t(h, m + 30), t(h, m - 10)].filter(s => s !== ans));
+      const wrong = new Set([t(h + 1, m), t(h - 1, m), t(h, m + 5), t(h, m - 5), t(h, m + 10), t(h, m - 10), t(h, m + 30)].filter(s => s !== ans));
       return { key: `clock3_${ans}`, n: [h, m], visual: clockSvg(h, m), text: 'What time is it?', say: 'What time does the clock show?',
         choices: shuffle([ans, ...pickN([...wrong], 3)]), answer: ans, choiceClass: 'word' };
     },
@@ -259,10 +260,10 @@
   // ---------- Grade 1 phonics ----------
   // Picture words: each emoji must clearly show that one word.
   const PICS = {
-    ant: '🐜', apple: '🍎', ball: '⚽', bat: '🦇', bed: '🛏️', bee: '🐝', box: '📦', bug: '🐛', bus: '🚌',
-    car: '🚗', cat: '🐱', cow: '🐮', cup: '🥤', dog: '🐶', duck: '🦆', egg: '🥚', fish: '🐟', fox: '🦊',
+    ant: '🐜', apple: '🍎', ball: '⚽', bat: '🦇', bed: '🛏️', bee: '🐝', box: '📦', bug: '🪲', bus: '🚌',
+    car: '🚗', cat: '🐱', cow: '🐮', cup: '☕', dog: '🐶', duck: '🦆', egg: '🥚', fish: '🐟', fox: '🦊',
     frog: '🐸', goat: '🐐', hand: '✋', hat: '🎩', key: '🔑', kite: '🪁', leaf: '🍃', lion: '🦁', map: '🗺️',
-    moon: '🌙', mouse: '🐭', net: '🥅', nose: '👃', owl: '🦉', pen: '🖊️', pig: '🐷', rabbit: '🐰', rat: '🐀',
+    moon: '🌙', mouse: '🐭', nose: '👃', owl: '🦉', pen: '🖊️', pig: '🐷', rabbit: '🐰',
     ring: '💍', snake: '🐍', sun: '☀️', ten: '🔟', tree: '🌳', turtle: '🐢', umbrella: '☂️', van: '🚐',
     web: '🕸️', yarn: '🧶', zebra: '🦓',
   };
@@ -272,6 +273,7 @@
   const SAME_SOUND = { c: ['k'], k: ['c'] };
   const isCVC = w => /^[^aeiou][aeiou][^aeiou]$/.test(w);
   const CVC = PIC_WORDS.filter(isCVC);
+  const SHORT_VOWEL = CVC.filter(w => !['car', 'cow', 'key'].includes(w)); // CVC-shaped words whose vowel really is short
 
   // Words in a family all rhyme with each other and with nothing in other families.
   const RHYMES = [
@@ -296,6 +298,11 @@
       'grow', 'hold', 'hurt', 'keep', 'kind', 'laugh', 'light', 'long', 'much', 'myself', 'never', 'only',
       'own', 'pick', 'seven', 'shall', 'show', 'six', 'small', 'start', 'today', 'together', 'try', 'warm'],
   };
+
+  // Sight words that sound the same; a question never offers two of them.
+  const SOUND_ALIKE = [['to', 'two', 'too'], ['right', 'write'], ['their', 'there'], ['here', 'hear'], ['one', 'won'], ['by', 'buy'],
+    ['for', 'four'], ['no', 'know'], ['read', 'red'], ['eight', 'ate'], ['see', 'sea'], ['would', 'wood'], ['which', 'witch']];
+  const soundsLike = (a, b) => a !== b && SOUND_ALIKE.some(g => g.includes(a) && g.includes(b));
 
   const pic = w => `<div class="pic">${PICS[w]}</div>`;
 
@@ -329,7 +336,7 @@
   function sightFor(grade) {
       const list = SIGHT[grade], word = pick(list);
       return { key: `sight${grade}${word}`, visual: '<div class="pic ear">👂</div>', text: 'Tap the word you hear!',
-        say: `Find the word: ${word}.`, choices: wordChoices(word, list), answer: word, choiceClass: 'word', hint: word };
+        say: `Find the word: ${word}.`, choices: wordChoices(word, list.filter(w => !soundsLike(word, w))), answer: word, choiceClass: 'word', hint: word };
   }
 
   // ---------- Grade 2 phonics ----------
@@ -351,7 +358,7 @@
     book: 'books', brush: 'brushes', peach: 'peaches', bunny: 'bunnies', hat: 'hats', watch: 'watches' };
   const COMPOUNDS = [['sun', 'flower'], ['rain', 'bow'], ['cup', 'cake'], ['foot', 'ball'], ['butter', 'fly'], ['star', 'fish'],
     ['snow', 'man'], ['pan', 'cake'], ['tooth', 'brush'], ['bed', 'room'], ['play', 'ground'], ['back', 'pack'], ['pop', 'corn'],
-    ['sea', 'shell'], ['bird', 'house'], ['fire', 'fly'], ['hot', 'dog'], ['base', 'ball'], ['sand', 'box'], ['mail', 'box']];
+    ['sea', 'shell'], ['bird', 'house'], ['fire', 'fly'], ['rain', 'coat'], ['base', 'ball'], ['sand', 'box'], ['mail', 'box']];
   const CONTRACTIONS = { 'do not': "don't", 'cannot': "can't", 'is not': "isn't", 'I am': "I'm", 'it is': "it's", 'we are': "we're",
     'they are': "they're", 'you are': "you're", 'he is': "he's", 'did not': "didn't", 'will not': "won't", 'was not': "wasn't",
     'I will': "I'll", 'she will': "she'll", 'let us': "let's", 'I have': "I've", 'could not': "couldn't", 'are not': "aren't" };
@@ -368,14 +375,14 @@
     },
     longvowel() {
       const v = pick(Object.keys(LONG)), ans = pick(LONG[v]);
-      const wrong = pickN(CVC, 3); // short-vowel words never have a long sound
+      const wrong = pickN(SHORT_VOWEL, 3);
       return { key: `long${ans}`, visual: `<div class="pic">${v.toUpperCase()}</div>`, text: `Which word has a LONG ${v.toUpperCase()} sound?`,
-        say: `Which word has a long ${v} sound, like in ${ans === LONG[v][0] ? LONG[v][1] : LONG[v][0]}?`, choices: shuffle([ans, ...wrong]), answer: ans,
+        say: `Which word has the same vowel sound as ${ans === LONG[v][0] ? LONG[v][1] : LONG[v][0]}?`, choices: shuffle([ans, ...wrong]), answer: ans,
         choiceClass: 'word', hearChoices: true, vowel: v };
     },
     plural() {
       const word = pick(Object.keys(PLURALS)), ans = PLURALS[word];
-      const wrong = new Set([word + 's', word + 'es', word + 'ies', word.replace(/y$/, 'ys'), word + "'s"].filter(w => w !== ans));
+      const wrong = new Set([word + 's', word + 'es', word + 'ies', word.replace(/y$/, 'ys'), word + 'z'].filter(w => w !== ans));
       return { key: `plural${word}`, visual: sentence(`one ${word}, two ___`), text: 'Which word fits?',
         say: `One ${word}, two what?`, choices: shuffle([ans, ...pickN([...wrong], 3)]), answer: ans, choiceClass: 'word', base: word };
     },
@@ -399,10 +406,12 @@
 
   // ---------- Grade 3 phonics / word study ----------
   // Each word appears in one pair only, so a wrong choice from another pair is never also right.
-  const ANTONYMS = [['hot', 'cold'], ['big', 'small'], ['up', 'down'], ['fast', 'slow'], ['happy', 'sad'], ['wet', 'dry'],
-    ['open', 'closed'], ['day', 'night'], ['in', 'out'], ['push', 'pull'], ['loud', 'quiet'], ['full', 'empty'], ['old', 'new'],
-    ['hard', 'soft'], ['tall', 'short'], ['light', 'dark'], ['first', 'last'], ['over', 'under'], ['top', 'bottom'],
-    ['early', 'late'], ['clean', 'dirty'], ['near', 'far'], ['thick', 'thin'], ['start', 'stop']];
+  // Third item is the idea the pair belongs to; wrong answers never come from the same idea.
+  const ANTONYMS = [['hot', 'cold', 'temp'], ['big', 'small', 'size'], ['up', 'down', 'place'], ['fast', 'slow', 'speed'], ['happy', 'sad', 'mood'],
+    ['wet', 'dry', 'wet'], ['open', 'closed', 'open'], ['day', 'night', 'time'], ['in', 'out', 'place'], ['push', 'pull', 'move'],
+    ['loud', 'quiet', 'sound'], ['full', 'empty', 'full'], ['old', 'new', 'age'], ['hard', 'soft', 'feel'], ['tall', 'short', 'size'],
+    ['light', 'dark', 'light'], ['first', 'last', 'order'], ['over', 'under', 'place'], ['top', 'bottom', 'place'],
+    ['early', 'late', 'time'], ['clean', 'dirty', 'clean'], ['near', 'far', 'place'], ['thick', 'thin', 'size'], ['start', 'stop', 'move']];
   const SYNONYMS = [['big', 'large'], ['small', 'tiny'], ['happy', 'glad'], ['sad', 'unhappy'], ['fast', 'quick'], ['begin', 'start'],
     ['shut', 'close'], ['look', 'see'], ['speak', 'talk'], ['smart', 'clever'], ['funny', 'silly'], ['cold', 'chilly'],
     ['pretty', 'beautiful'], ['mad', 'angry'], ['scared', 'afraid'], ['tired', 'sleepy'], ['easy', 'simple'], ['hard', 'difficult']];
@@ -410,19 +419,19 @@
     school: ['scool', 'shcool', 'skool'], little: ['litle', 'littel', 'lital'], water: ['watter', 'woter', 'wather'],
     house: ['hous', 'howse', 'huose'], again: ['agen', 'agian', 'agane'], every: ['evry', 'evrey', 'eviry'],
     always: ['allways', 'alwais', 'alway'], animal: ['aminal', 'animel', 'anamal'], beautiful: ['beutiful', 'butiful', 'beautifull'],
-    favorite: ['favrite', 'favoret', 'favorit'], does: ['dose', 'duz', 'doez'], said: ['sed', 'sayed', 'saed'],
+    favorite: ['favrite', 'favoret', 'favorit'], does: ['dus', 'duz', 'doez'], said: ['sed', 'sayed', 'saed'],
     where: ['wher', 'whare', 'whair'], which: ['wich', 'whitch', 'whach'], before: ['befor', 'beefore', 'befour'],
     thought: ['thot', 'thougt', 'thaught'], enough: ['enuf', 'enogh', 'enouf'], around: ['arownd', 'arond', 'aruond'],
     really: ['realy', 'relly', 'rilly'], different: ['diffrent', 'diferent', 'differant'] };
   const PREFIXES = { un: 'not', re: 'again', pre: 'before' };
   const PREFIX_WORDS = { un: ['happy', 'kind', 'fair', 'safe', 'able', 'lucky', 'tidy', 'well'], re: ['do', 'play', 'write', 'tell', 'build', 'read', 'fill', 'paint'],
     pre: ['heat', 'test', 'view', 'school', 'pay', 'order'] };
-  const meaning = (p, base) => p === 'un' ? `not ${base}` : p === 're' ? `${base} again` : `${base} before`;
+  const meaning = (p, base) => p === 'un' ? `not ${base}` : p === 're' ? `${base} again` : `before ${base}`;
   const PAST = { go: 'went', run: 'ran', eat: 'ate', see: 'saw', sing: 'sang', swim: 'swam', give: 'gave', take: 'took', come: 'came',
     write: 'wrote', ride: 'rode', fly: 'flew', drink: 'drank', sit: 'sat', make: 'made', bring: 'brought', think: 'thought',
     catch: 'caught', buy: 'bought', say: 'said', sleep: 'slept', feel: 'felt', find: 'found', tell: 'told', draw: 'drew' };
   const IRREGULAR = { child: 'children', mouse: 'mice', foot: 'feet', tooth: 'teeth', man: 'men', woman: 'women', goose: 'geese',
-    person: 'people', leaf: 'leaves', wolf: 'wolves', knife: 'knives', sheep: 'sheep', fish: 'fish', deer: 'deer', ox: 'oxen' };
+    leaf: 'leaves', wolf: 'wolves', knife: 'knives', sheep: 'sheep', deer: 'deer', ox: 'oxen' };
   // Sentences where only the right homophone fits.
   const HOMOPHONES = [
     ['I can ___ the birds singing.', 'hear', 'here'], ['Please come over ___.', 'here', 'hear'],
@@ -441,8 +450,8 @@
 
   const phonics3 = {
     antonym() {
-      const pair = pick(ANTONYMS), [w, ans] = shuffle(pair);
-      const wrong = pickN(ANTONYMS.filter(p => p !== pair), 3).map(pick);
+      const pair = pick(ANTONYMS), [w, ans] = shuffle(pair.slice(0, 2));
+      const wrong = pickN(ANTONYMS.filter(p => p[2] !== pair[2]), 3).map(p => pick(p.slice(0, 2)));
       return { key: `ant${w}`, visual: big(w), text: `Which word is the OPPOSITE of “${w}”?`, say: `Which word means the opposite of ${w}?`,
         choices: shuffle([ans, ...wrong]), answer: ans, choiceClass: 'word', word: w };
     },
@@ -454,7 +463,7 @@
     },
     spelling() {
       const ans = pick(Object.keys(SPELLING));
-      return { key: `spell${ans}`, visual: '<div class="pic ear">👂</div>', text: 'Which one is spelled right?', say: `Which word is spelled correctly? ${ans}.`,
+      return { key: `spell${ans}`, visual: '<div class="pic ear">👂</div>', text: 'Which one spells the word you hear?', say: `Which one spells the word: ${ans}?`,
         choices: shuffle([ans, ...SPELLING[ans]]), answer: ans, choiceClass: 'word', hint: ans };
     },
     prefix() {
@@ -466,7 +475,7 @@
     past() {
       const base = pick(Object.keys(PAST)), ans = PAST[base];
       const others = Object.values(PAST).filter(w => w !== ans);
-      const wrong = new Set([base + 'ed', ...pickN(others, 3)]);
+      const wrong = new Set([...(['sing', 'see'].includes(base) ? [] : [base + 'ed']), ...pickN(others, 4)]);
       return { key: `past${base}`, visual: sentence(`Today I ${base}. Yesterday I ___.`), text: 'Which word fits?',
         say: `Today I ${base}. Yesterday I what?`, choices: shuffle([ans, ...pickN([...wrong], 3)]), answer: ans, choiceClass: 'word', base };
     },
@@ -478,9 +487,8 @@
     },
     homophone() {
       const [s, ans, partner] = pick(HOMOPHONES);
-      const others = HOMOPHONES.flatMap(h => [h[1], h[2]]).filter(w => w !== ans && w !== partner);
       return { key: `homo${ans}`, visual: sentence(s), text: 'Which word fits the sentence?', say: s.replace('___', 'blank'),
-        choices: shuffle([ans, partner, ...pickN([...new Set(others)], 2)]), answer: ans, choiceClass: 'word', s, partner };
+        choices: shuffle([ans, partner]), answer: ans, choiceClass: 'word', s, partner };
     },
     sight() { return sightFor(3); },
     syllable: () => phonics2.syllable(),
@@ -501,7 +509,7 @@
   };
   const GENERATORS = { math: { 1: math1, 2: math2, 3: math3 }, phonics: { 1: phonics1, 2: phonics2, 3: phonics3 } };
   const LEVEL_NAMES = {
-    math: { 1: ['Numbers up to 10', 'Numbers up to 20'], 2: ['Adding to 50 & skip counting', 'Adding to 100, time & money'], 3: ['Times tables 2, 5, 10', 'All times tables & fractions'] },
+    math: { 1: ['Numbers up to 10', 'Numbers up to 20'], 2: ['Adding without carrying & skip counting', 'Carrying, time & money'], 3: ['Easy times tables & fractions', 'All times tables & dividing'] },
     phonics: { 1: ['Letters & sounds', 'Words & rhymes'], 2: ['Blends & long vowels', 'Plurals & compound words'], 3: ['Opposites & spelling', 'Prefixes & past tense'] },
   };
 
@@ -517,7 +525,7 @@
   }
 
   const api = { generate, LEVEL_NAMES, MIX, data: { PICS, CVC, RHYMES, SIGHT, LETTERS, SAME_SOUND, COINS, BLENDS, LONG, PLURALS, COMPOUNDS,
-    CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES } };
+    CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES, SOUND_ALIKE } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Questions = api;
 })(this);
