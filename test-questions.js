@@ -154,7 +154,8 @@ for (let i = 0; i < N; i++) {
       case 'lifecycle': { const st = Lessons.LIFECYCLES[q.name][1];
         if (st[q.idx] !== answer || new Set(choices).size !== st.length) fail(q, 'Life cycle wrong');
         const m = q.text.match(/after the (.+)\?/); if (m && st[q.idx - 1] !== m[1]) fail(q, 'Life cycle step mismatch');
-        if (q.text.includes('FIRST') && q.idx !== 0) fail(q, 'Life cycle FIRST wrong'); break; }
+        if (q.text.includes('FIRST') && q.idx !== 0) fail(q, 'Life cycle FIRST wrong');
+        if (!q.say.includes(`life of a ${q.name}`)) fail(q, 'Spoken life-cycle question does not name the creature'); break; }
       case 'plantpart': if (!Lessons.PLANT_PARTS[answer].includes(q.job)) fail(q, 'Plant part wrong'); break;
       default: fail(q, 'Unknown science type');
     }

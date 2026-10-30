@@ -591,7 +591,7 @@
       }
       const shown = shuffle(steps);
       return { key: `order${steps[0]}${idx}`, visual: `<div class="passage"><b>Put these in order:</b><br>${shown.map(esc).join('<br>')}</div>`,
-        text: ask, say: `Here are some things that happen: ${shown.join('. ')}. ${ask.replace(/[“”]/g, '')}`,
+        text: ask, say: `Here are some things that happen: ${shown.join('. ')}. ${ask.replace(/right after “(.+)”/, 'right after this one: $1')}`,
         choices: shuffle(steps), answer: ans, choiceClass: 'word', item, idx };
     },
   };
@@ -616,7 +616,7 @@
     matter(grade) {
       const states = grade === 1 ? ['solid', 'liquid'] : ['solid', 'liquid', 'gas'];
       const ans = pick(states), [name, emoji] = pick(Lessons.MATTER[ans]);
-      const ask = `Is ${art(name)} a ${states.join(', a ').replace(/, a (\w+)$/, ' or a $1')}?`;
+      const ask = `Is ${art(name)} a ${states.join(', a ').replace(/, a (\w+)$/, states.length > 2 ? ', or a $1' : ' or a $1')}?`;
       return { key: `matter${name}`, visual: picHtml(emoji, name), text: ask, say: ask,
         choices: shuffle(states), answer: ans, choiceClass: 'word', name };
     },
@@ -626,15 +626,16 @@
         choices: wordChoices(ans, Object.keys(Lessons.SENSES)), answer: ans, choiceClass: 'word', act };
     },
     habitat() {
-      const ans = pick(Object.keys(Lessons.HABITATS)), [, animals] = Lessons.HABITATS[ans], [name, emoji] = pick(animals);
+      const ans = pick(Object.keys(Lessons.HABITATS)), [, animals] = Lessons.HABITATS[ans], [name, emoji, also = []] = pick(animals);
+      const banned = new Set([ans, ...also, ...(Lessons.HABITAT_ALIKE[ans] || [])]);
       return { key: `hab${name}`, visual: picHtml(emoji, name), text: `Where does ${art(name)} live?`, say: `Where does ${art(name)} live?`,
-        choices: wordChoices(ans, Object.keys(Lessons.HABITATS)), answer: ans, choiceClass: 'word', name };
+        choices: shuffle([ans, ...pickN(Object.keys(Lessons.HABITATS).filter(h => !banned.has(h)), 3)]), answer: ans, choiceClass: 'word', name };
     },
     lifecycle(grade, level) {
       const name = pick(Object.keys(Lessons.LIFECYCLES)), [emoji, stages] = Lessons.LIFECYCLES[name];
       let idx, ask;
       if (level === 1 && Math.random() < 0.5) { idx = 0; ask = `What comes FIRST in the life of a ${name}?`; }
-      else { idx = rand(1, stages.length - 1); ask = `What comes right after the ${stages[idx - 1]}?`; }
+      else { idx = rand(1, stages.length - 1); ask = `In the life of a ${name}, what comes right after the ${stages[idx - 1]}?`; }
       const ans = stages[idx];
       return { key: `life${name}${idx}`, visual: picHtml(emoji, `life of a ${name}`), text: ask, say: ask,
         choices: shuffle(stages), answer: ans, choiceClass: 'word', name, idx };
@@ -679,7 +680,7 @@
     math: { 1: ['Numbers up to 10', 'Numbers up to 20'], 2: ['Adding without carrying & skip counting', 'Carrying, time & money'], 3: ['Easy times tables & fractions', 'All times tables & dividing'] },
     phonics: { 1: ['Letters & sounds', 'Words & rhymes'], 2: ['Blends & long vowels', 'Plurals & compound words'], 3: ['Opposites & spelling', 'Prefixes & past tense'] },
     reading: { 1: ['Short stories', 'Longer stories & why'], 2: ['Stories & facts', 'Reading between the lines'], 3: ['Longer passages', 'Main ideas & word meanings'] },
-    science: { 1: ['Living things & senses', 'Habitats & life cycles'], 2: ['Animals, matter & plants', 'Earth, space & weather'], 3: ['Forces, energy & living things', 'Earth, space & changes'] },
+    science: { 1: ['Living things & senses', 'Habitats & life cycles'], 2: ['Animals, matter & plants', 'Matter, magnets & space'], 3: ['Forces, energy & living things', 'Earth, space & changes'] },
   };
   const SUBJECTS = ['math', 'phonics', 'reading', 'science'];
 

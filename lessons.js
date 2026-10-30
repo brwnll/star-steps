@@ -14,7 +14,7 @@
     { g: 1, l: 1, text: 'Dad bakes a cake. It is for Leo\'s birthday.', q: 'Who is the cake for?', a: 'Leo', wrong: ['Dad', 'Mom', 'Zoe'] },
     { g: 1, l: 1, text: 'Ava puts on her boots. She jumps in a puddle.', q: 'What does Ava jump in?', a: 'a puddle', wrong: ['a pool', 'a pile of leaves', 'the sea'] },
     { g: 1, l: 1, text: 'The bus is big and yellow. Kai rides it to school.', q: 'Where does Kai go on the bus?', a: 'to school', wrong: ['to the park', 'to the zoo', 'home'] },
-    { g: 1, l: 1, text: 'Nia has a blue hat. She wears it in the snow.', q: 'When does Nia wear her hat?', a: 'in the snow', wrong: ['in the bath', 'at bedtime', 'in the pool'] },
+    { g: 1, l: 1, text: 'Nia has a blue hat. She wears it in the snow.', q: 'Where does Nia wear her hat?', a: 'in the snow', wrong: ['in the bath', 'at bedtime', 'in the pool'] },
     { g: 1, l: 1, text: 'Eli sees three ducks. They swim in the pond.', q: 'How many ducks does Eli see?', a: 'three', wrong: ['two', 'four', 'five'] },
     // Grade 1, level 2: three sentences, a little thinking.
     { g: 1, l: 2, text: 'Nia lost her hat. She looked under the bed. There it was!', q: 'Where was the hat?', a: 'under the bed', wrong: ['in the car', 'on her head', 'at school'] },
@@ -37,13 +37,13 @@
     { g: 2, l: 1, text: 'A tadpole hatches from an egg in a pond. It grows legs. Its tail gets shorter. At last it is a frog.', q: 'What does a tadpole become?', a: 'a frog', wrong: ['a fish', 'a bird', 'a snake'] },
     { g: 2, l: 1, text: 'Ben lost a tooth at lunch. He put it in a bag. That night he put the bag under his pillow.', q: 'Where did Ben put the tooth at night?', a: 'under his pillow', wrong: ['in his desk', 'in the trash', 'in his pocket'] },
     { g: 2, l: 1, text: 'Ruby\'s grandma lives on a farm. Every morning Ruby helps feed the chickens. Her favorite hen is named Pepper.', q: 'What does Ruby do every morning?', a: 'feeds the chickens', wrong: ['milks the cows', 'rides a horse', 'picks apples'] },
-    { g: 2, l: 1, text: 'Zoe found a shell on the beach. It was pink and white. When she held it to her ear, she heard a sound like the sea.', q: 'What colors was the shell?', a: 'pink and white', wrong: ['blue and green', 'black and gray', 'red and gold'] },
+    { g: 2, l: 1, text: 'Zoe found a shell on the beach. It was pink and white. When she held it to her ear, she heard a sound like the sea.', q: 'What color was the shell?', a: 'pink and white', wrong: ['blue and green', 'black and gray', 'red and gold'] },
     // Grade 2, level 2: reading between the lines, word meanings.
     { g: 2, l: 2, text: 'Mia tiptoed down the hall. She did not want to wake the baby. She found a cookie and crept back to her room.', q: 'Why did Mia tiptoe?', a: 'so she would not wake the baby', wrong: ['her feet hurt', 'she was playing a game', 'the floor was wet'] },
     { g: 2, l: 2, text: 'The old dog moved slowly. Climbing the stairs took a long time. Ruby waited for him at the top and patted his head.', q: 'What does this story show about Ruby?', a: 'she is kind', wrong: ['she is in a hurry', 'she is scared', 'she is sleepy'] },
     { g: 2, l: 2, text: 'Eli grabbed his umbrella and boots before school. When he got outside, he grinned. He was right!', q: 'What was the weather like?', a: 'rainy', wrong: ['sunny', 'snowy', 'windy'] },
     { g: 2, l: 2, text: 'The crowd cheered as Zoe crossed the finish line. She was exhausted, but she held up her ribbon with a huge smile.', q: 'What does "exhausted" mean?', a: 'very tired', wrong: ['very hungry', 'very angry', 'very cold'] },
-    { g: 2, l: 2, text: 'Our town has a farmers market every Saturday. People sell corn, peaches, and honey. Dad always buys too many peaches.', q: 'When is the market?', a: 'on Saturdays', wrong: ['every day', 'on Mondays', 'at night'] },
+    { g: 2, l: 1, text: 'Our town has a farmers market every Saturday. People sell corn, peaches, and honey. Dad always buys too many peaches.', q: 'When is the market?', a: 'on Saturdays', wrong: ['every day', 'on Mondays', 'at night'] },
     { g: 2, l: 2, text: 'Owls hunt at night. Their big eyes see well in the dark. Their soft feathers make no sound when they fly.', q: 'What is this passage mostly about?', a: 'how owls hunt at night', wrong: ['where owls build nests', 'what owls eat for breakfast', 'why owls are cute'] },
     { g: 2, l: 2, text: 'Leo\'s lemonade stand was empty all morning. Then he made a big sign and put it by the road. Soon a line of cars stopped.', q: 'Why did people stop?', a: 'they saw the sign', wrong: ['it was raining', 'Leo yelled', 'the road was closed'] },
     { g: 2, l: 2, text: 'Nia watered the plant every day, but its leaves turned yellow. Mom moved it to a sunny window. In a week it was green again.', q: 'What did the plant need?', a: 'more sun', wrong: ['more water', 'a bigger pot', 'less light'] },
@@ -51,11 +51,11 @@
     { g: 2, l: 2, text: 'The puppy was timid at first. It hid under the couch. After a few days it followed Ava everywhere.', q: 'What does "timid" mean?', a: 'shy', wrong: ['loud', 'hungry', 'strong'] },
     // Grade 3, level 1
     { g: 3, l: 1, text: 'The Sahara is the largest hot desert in the world. Days can be very hot, but nights get surprisingly cold. Camels can go days without water, which makes them perfect for desert travel.', q: 'Why are camels good for desert travel?', a: 'they can go days without water', wrong: ['they run very fast', 'they like the cold', 'they eat sand'] },
-    { g: 3, l: 1, text: 'Maya wanted to learn to skateboard. The first day she fell six times. She kept practicing after school. By the end of the month, she could ride all the way down the street.', q: 'How did Maya learn to skateboard?', a: 'by practicing every day', wrong: ['by watching videos', 'by reading a book', 'by asking a coach'] },
+    { g: 3, l: 2, text: 'Maya wanted to learn to skateboard. The first day she fell six times. She kept practicing after school. By the end of the month, she could ride all the way down the street.', q: 'How did Maya learn to skateboard?', a: 'by practicing every day', wrong: ['by watching videos', 'by reading a book', 'by asking a coach'] },
     { g: 3, l: 1, text: 'A volcano is a mountain with an opening at the top. Melted rock called lava can pour out. When lava cools, it turns into hard black rock.', q: 'What is lava?', a: 'melted rock', wrong: ['cold water', 'black sand', 'hot air'] },
     { g: 3, l: 1, text: 'Jaden\'s family planted a garden. They grew tomatoes, beans, and pumpkins. The pumpkins took the longest to grow, but they were the biggest by far.', q: 'Which plant grew the biggest?', a: 'pumpkins', wrong: ['tomatoes', 'beans', 'corn'] },
     { g: 3, l: 1, text: 'Honeybees talk by dancing. A bee that finds flowers does a "waggle dance" in the hive. The dance tells the other bees which way to fly and how far.', q: 'What does the waggle dance tell other bees?', a: 'where the flowers are', wrong: ['when to sleep', 'who the queen is', 'how to make honey'] },
-    { g: 3, l: 1, text: 'Priya forgot her lunch at home. Her friend Omar gave her half of his sandwich. The next day, Priya brought cookies to share with Omar.', q: 'Why did Priya bring cookies?', a: 'to thank Omar', wrong: ['it was her birthday', 'she did not like them', 'the teacher asked her to'] },
+    { g: 3, l: 2, text: 'Priya forgot her lunch at home. Her friend Omar gave her half of his sandwich. The next day, Priya brought cookies to share with Omar.', q: 'Why did Priya bring cookies?', a: 'to thank Omar', wrong: ['it was her birthday', 'she did not like them', 'the teacher asked her to'] },
     { g: 3, l: 1, text: 'The Great Wall of China is thousands of miles long. It was built long ago to keep out enemies. Today, people from all over the world visit it.', q: 'Why was the wall built?', a: 'to keep out enemies', wrong: ['for people to visit', 'to hold back water', 'to use as a road'] },
     { g: 3, l: 1, text: 'Sea turtles lay their eggs on the beach at night. They dig a hole in the sand and cover the eggs. Weeks later, the babies hatch and crawl to the sea.', q: 'Where do sea turtles lay their eggs?', a: 'on the beach', wrong: ['in the water', 'in a tree', 'under a rock'] },
     { g: 3, l: 1, text: 'Marcus built a birdhouse with his uncle. They measured each board twice before cutting. When they hung it in the oak tree, a wren moved in the very next day.', q: 'Where did they hang the birdhouse?', a: 'in the oak tree', wrong: ['on the porch', 'by the garage', 'on a pole'] },
@@ -65,8 +65,8 @@
     { g: 3, l: 2, text: 'The forest was silent after the storm. Branches lay everywhere. A small fawn stepped out, sniffed the air, and nibbled a leaf as if nothing had happened.', q: 'What does "silent" mean?', a: 'quiet', wrong: ['dark', 'wet', 'scary'] },
     { g: 3, l: 2, text: 'Ants are tiny, but they are strong. An ant can carry something fifty times its own weight. That is like a person lifting a car!', q: 'Why does the author mention a person lifting a car?', a: 'to show how strong ants are', wrong: ['to say people are weak', 'to explain how cars work', 'to tell a joke about ants'] },
     { g: 3, l: 2, text: 'Nobody wanted to be partners with the new kid, Theo. Lena remembered her first day at a new school. She walked over and asked Theo to work with her.', q: 'Why did Lena ask Theo to be her partner?', a: 'she remembered feeling new too', wrong: ['the teacher made her', 'Theo was her cousin', 'she had no other choice'] },
-    { g: 3, l: 2, text: 'Mount Everest is the tallest mountain on Earth. The air near the top has very little oxygen, so climbers carry tanks of it. Even so, reaching the top can take weeks.', q: 'Why do climbers carry oxygen tanks?', a: 'the air near the top has little oxygen', wrong: ['to stay warm', 'to cook food', 'to signal for help'] },
-    { g: 3, l: 2, text: 'Grandpa\'s hands were rough and wrinkled. He had fixed boats for forty years. "Every scar is a story," he said, and he told me three of them before dinner.', q: 'What did Grandpa do for a living?', a: 'fixed boats', wrong: ['taught school', 'drove a truck', 'baked bread'] },
+    { g: 3, l: 1, text: 'Mount Everest is the tallest mountain on Earth. The air near the top has very little oxygen, so climbers carry tanks of it. Even so, reaching the top can take weeks.', q: 'Why do climbers carry oxygen tanks?', a: 'the air near the top has little oxygen', wrong: ['to stay warm', 'to cook food', 'to signal for help'] },
+    { g: 3, l: 1, text: 'Grandpa\'s hands were rough and wrinkled. He had fixed boats for forty years. "Every scar is a story," he said, and he told me three of them before dinner.', q: 'What did Grandpa do for a living?', a: 'fixed boats', wrong: ['taught school', 'drove a truck', 'baked bread'] },
     { g: 3, l: 2, text: 'The recycling club collected bottles for a month. They turned them in and earned enough money for new library books. The principal said it was the best club project ever.', q: 'What is the main idea?', a: 'the club helped the school by recycling', wrong: ['bottles are heavy', 'the principal likes books', 'clubs meet after school'] },
     { g: 3, l: 2, text: 'Rosa trained for the spelling bee for weeks. In the final round she missed "necessary". She was disappointed, but she shook the winner\'s hand and said, "Next year!"', q: 'What does Rosa\'s last line show about her?', a: 'she will not give up', wrong: ['she is angry', 'she is a bad speller', 'she wants to quit'] },
     { g: 3, l: 2, text: 'The lighthouse keeper climbed the stairs every evening to light the lamp. Ships far out at sea used its beam to steer clear of the rocks. In fifty years, he never missed a night.', q: 'What does the passage suggest about the keeper?', a: 'he was dependable', wrong: ['he was afraid of the dark', 'he disliked ships', 'he was often late'] },
@@ -84,7 +84,7 @@
     { g: 2, steps: ['mix the batter', 'bake the cake', 'eat a slice'] },
     { g: 2, steps: ['the caterpillar eats leaves', 'it makes a chrysalis', 'it becomes a butterfly'] },
     { g: 2, steps: ['pack a bag', 'ride to the beach', 'build a sandcastle'] },
-    { g: 2, steps: ['get a library card', 'pick out a book', 'read it at home'] },
+    { g: 2, steps: ['go to the library', 'pick out a book', 'check it out', 'read it at home'] },
     { g: 2, steps: ['buy the seeds', 'dig a hole', 'plant them', 'wait for sprouts'] },
     { g: 3, steps: ['the bird gathers sticks', 'it builds a nest', 'it lays eggs', 'the chicks hatch'] },
     { g: 3, steps: ['snow falls', 'the kids build a snowman', 'the sun comes out', 'the snowman melts'] },
@@ -111,25 +111,29 @@
 
   const MATTER = { solid: [['ice cube', '🧊'], ['rock', '🪨'], ['apple', '🍎'], ['spoon', '🥄'], ['book', '📚'], ['brick', '🧱'], ['pencil', '✏️']],
     liquid: [['milk', '🥛'], ['juice', '🧃'], ['honey', '🍯'], ['rain', '🌧️'], ['hot tea', '🍵'], ['ocean water', '🌊']],
-    gas: [['steam', '♨️'], ['the air in a balloon', '🎈'], ['the air we breathe', '💨'], ['smoke', '🌫️']] };
+    gas: [['steam', '♨️'], ['the air in a balloon', '🎈'], ['the air we breathe', '💨'], ['the air inside a bubble', '🫧']] };
 
   const SENSES = { sight: ['👀', ['see a rainbow', 'read a sign', 'watch a bird fly']], hearing: ['👂', ['hear a bell ring', 'listen to music', 'hear a dog bark']],
     smell: ['👃', ['smell flowers', 'smell cookies baking', 'smell the rain']], taste: ['👅', ['taste a lemon', 'taste ice cream', 'taste salty chips']],
     touch: ['✋', ['feel a soft blanket', 'feel cold snow', 'feel a bumpy rock']] };
 
+  // Each animal: [name, emoji, other habitats that would also be a fair answer]. Those are never offered as wrong choices.
   const HABITATS = { ocean: ['🌊', [['shark', '🦈'], ['whale', '🐳'], ['octopus', '🐙'], ['crab', '🦀']]],
     desert: ['🏜️', [['camel', '🐪'], ['scorpion', '🦂'], ['rattlesnake', '🐍'], ['lizard', '🦎']]],
-    forest: ['🌲', [['deer', '🦌'], ['squirrel', '🐿️'], ['bear', '🐻'], ['owl', '🦉']]],
-    'icy polar lands': ['❄️', [['polar bear', '🐻‍❄️'], ['seal', '🦭']]],
-    pond: ['🏞️', [['frog', '🐸'], ['duck', '🦆'], ['dragonfly', '🪰'], ['beaver', '🦫']]],
+    forest: ['🌲', [['deer', '🦌'], ['squirrel', '🐿️'], ['bear', '🐻'], ['raccoon', '🦝']]],
+    'icy polar lands': ['❄️', [['polar bear', '🐻‍❄️', ['ocean']], ['seal', '🦭', ['ocean']], ['penguin', '🐧', ['ocean']]]],
+    pond: ['🏞️', [['frog', '🐸'], ['duck', '🦆', ['farm']], ['turtle', '🐢'], ['beaver', '🦫']]],
     farm: ['🚜', [['cow', '🐮'], ['pig', '🐷'], ['chicken', '🐔'], ['sheep', '🐑']]],
+    grassland: ['🌾', [['lion', '🦁'], ['zebra', '🦓'], ['giraffe', '🦒'], ['elephant', '🐘']]],
     rainforest: ['🌴', [['monkey', '🐒'], ['parrot', '🦜'], ['sloth', '🦥'], ['jaguar', '🐆']]] };
+  // Habitats too alike to offer side by side.
+  const HABITAT_ALIKE = { forest: ['rainforest'], rainforest: ['forest'] };
 
   const LIFECYCLES = { frog: ['🐸', ['egg', 'tadpole', 'froglet', 'frog']], butterfly: ['🦋', ['egg', 'caterpillar', 'chrysalis', 'butterfly']],
-    plant: ['🌻', ['seed', 'sprout', 'plant', 'flower']], chicken: ['🐔', ['egg', 'chick', 'hen']] };
+    plant: ['🌻', ['seed', 'sprout', 'leafy plant', 'flowering plant']], chicken: ['🐔', ['egg', 'chick', 'grown chicken']] };
 
-  const PLANT_PARTS = { roots: ['take in water from the soil', 'hold the plant in the ground'], stem: ['holds the plant up', 'carries water up to the leaves'],
-    leaves: ['make food from sunlight'], flower: ['makes the seeds'], seed: ['grows into a new plant'] };
+  const PLANT_PARTS = { roots: ['takes in water from the soil', 'holds the plant in the ground'], stem: ['holds the plant up', 'carries water up to the leaves'],
+    leaves: ['makes food from sunlight'], flower: ['makes the seeds'], seed: ['grows into a new plant'] };
 
   // ---------- Science: facts ----------
   // { g, l, q, a, wrong: [3] }
@@ -144,7 +148,7 @@
     { g: 1, l: 1, q: 'Which animal lays eggs?', a: 'chicken', wrong: ['dog', 'cow', 'cat'] },
     { g: 1, l: 1, q: 'What covers a bird\'s body?', a: 'feathers', wrong: ['fur', 'scales', 'shells'] },
     { g: 1, l: 1, q: 'What do you use to smell a flower?', a: 'your nose', wrong: ['your ears', 'your eyes', 'your feet'] },
-    { g: 1, l: 1, q: 'Which is hot?', a: 'the sun', wrong: ['ice', 'snow', 'the moon'] },
+    { g: 1, l: 1, q: 'Which one is cold?', a: 'ice', wrong: ['the sun', 'a campfire', 'hot soup'] },
     // Grade 1, level 2
     { g: 1, l: 2, q: 'What do we call a baby frog?', a: 'a tadpole', wrong: ['a puppy', 'a kitten', 'a chick'] },
     { g: 1, l: 2, q: 'What do fish use to breathe?', a: 'gills', wrong: ['lungs', 'noses', 'fins'] },
@@ -168,7 +172,7 @@
     { g: 2, l: 1, q: 'What force pulls things down toward the ground?', a: 'gravity', wrong: ['wind', 'light', 'sound'] },
     { g: 2, l: 1, q: 'What do we call water that rises into the air as a gas?', a: 'water vapor', wrong: ['ice', 'snow', 'mud'] },
     // Grade 2, level 2
-    { g: 2, l: 2, q: 'What do we call an animal that eats only plants?', a: 'a herbivore', wrong: ['a carnivore', 'an omnivore', 'a predator'] },
+    { g: 2, l: 2, q: 'What do we call an animal that eats only plants?', a: 'an herbivore', wrong: ['a carnivore', 'an omnivore', 'a predator'] },
     { g: 2, l: 2, q: 'What gas do people need to breathe?', a: 'oxygen', wrong: ['helium', 'smoke', 'steam'] },
     { g: 2, l: 2, q: 'Which of these can a magnet pick up?', a: 'a paper clip', wrong: ['a plastic cup', 'a leaf', 'a rubber band'] },
     { g: 2, l: 2, q: 'What are the four seasons?', a: 'winter, spring, summer, fall', wrong: ['day, night, dawn, dusk', 'rain, snow, sun, wind', 'north, south, east, west'] },
@@ -185,14 +189,14 @@
     { g: 3, l: 1, q: 'What do we call animals with a backbone?', a: 'vertebrates', wrong: ['invertebrates', 'insects', 'herbivores'] },
     { g: 3, l: 1, q: 'Where does a plant make its food?', a: 'in its leaves', wrong: ['in its roots', 'in the soil', 'in the flower'] },
     { g: 3, l: 1, q: 'What is the closest star to Earth?', a: 'the sun', wrong: ['the North Star', 'the moon', 'Mars'] },
-    { g: 3, l: 1, q: 'What is sound made by?', a: 'vibrations', wrong: ['light', 'heat', 'smells'] },
+    { g: 3, l: 1, q: 'What makes sound?', a: 'vibrations', wrong: ['light', 'heat', 'smells'] },
     { g: 3, l: 1, q: 'Which is a renewable energy source?', a: 'sunlight', wrong: ['coal', 'oil', 'natural gas'] },
-    { g: 3, l: 1, q: 'At what temperature does water boil?', a: '100 degrees Celsius', wrong: ['0 degrees Celsius', '50 degrees Celsius', '1,000 degrees Celsius'] },
+    { g: 3, l: 1, q: 'At what temperature does water freeze?', a: '32 degrees Fahrenheit', wrong: ['0 degrees Fahrenheit', '100 degrees Fahrenheit', '212 degrees Fahrenheit'] },
     { g: 3, l: 1, q: 'What do we call the amount of space something takes up?', a: 'volume', wrong: ['weight', 'length', 'color'] },
     // Grade 3, level 2
     { g: 3, l: 2, q: 'What do fossils tell us about?', a: 'plants and animals from long ago', wrong: ['tomorrow\'s weather', 'how to cook', 'how to build houses'] },
     { g: 3, l: 2, q: 'What is the process plants use to make food from sunlight?', a: 'photosynthesis', wrong: ['digestion', 'evaporation', 'migration'] },
-    { g: 3, l: 2, q: 'An animal that eats both plants and animals is called?', a: 'an omnivore', wrong: ['a herbivore', 'a carnivore', 'a producer'] },
+    { g: 3, l: 2, q: 'What do we call an animal that eats both plants and animals?', a: 'an omnivore', wrong: ['an herbivore', 'a carnivore', 'a producer'] },
     { g: 3, l: 2, q: 'Why do some birds fly south for the winter?', a: 'to find food and warmer weather', wrong: ['to get taller', 'to learn to swim', 'because they are lost'] },
     { g: 3, l: 2, q: 'Which is a physical change, not a chemical change?', a: 'ice melting', wrong: ['wood burning', 'a cake baking', 'iron rusting'] },
     { g: 3, l: 2, q: 'What holds the planets in orbit around the sun?', a: 'gravity', wrong: ['wind', 'magnets', 'light'] },
@@ -203,9 +207,9 @@
   ];
 
   // Names that take no 'a'/'an' in front (mass nouns and phrases).
-  const NO_ARTICLE = ['milk', 'juice', 'honey', 'rain', 'hot tea', 'ocean water', 'steam', 'the air in a balloon', 'the air we breathe', 'smoke', 'grass'];
+  const NO_ARTICLE = ['milk', 'juice', 'honey', 'rain', 'hot tea', 'ocean water', 'steam', 'the air in a balloon', 'the air we breathe', 'the air inside a bubble', 'grass'];
 
-  const api = { NO_ARTICLE, PASSAGES, SEQUENCES, ANIMALS, GROUPS, LIVING, MATTER, SENSES, HABITATS, LIFECYCLES, PLANT_PARTS, FACTS };
+  const api = { NO_ARTICLE, HABITAT_ALIKE, PASSAGES, SEQUENCES, ANIMALS, GROUPS, LIVING, MATTER, SENSES, HABITATS, LIFECYCLES, PLANT_PARTS, FACTS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Lessons = api;
 })(this);
