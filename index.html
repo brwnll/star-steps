@@ -143,6 +143,38 @@
   .choice:nth-child(4) .ans { background: var(--pink); }
   .ans.right { background: var(--green) !important; animation: grow .5s ease; outline: 8px solid #fff; }
   .ans.wrong { background: #c9c3dd !important; animation: wobble .45s ease; box-shadow: none; }
+  /* Touch questions: drag, tap, build, slide */
+  .pic.small { font-size: 80px; animation: none; }
+  .choices.touch { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .tray, .bins, .tiles, .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; width: 100%; }
+  .tray { min-height: 120px; padding: 10px; border-radius: 22px; background: rgba(255,255,255,.55); }
+  .chip { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 112px; height: 112px; border-radius: 22px;
+    background: #fff; box-shadow: 0 6px 0 rgba(0,0,0,.15); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; font-weight: 600; }
+  .chip .em { font-size: 52px; line-height: 1.1; } .chip small { font-size: 15px; color: #444; text-align: center; padding: 0 4px; line-height: 1.1; }
+  .chip.sel { outline: 6px solid var(--yellow); } .chip.dragging { position: fixed; z-index: 50; transform: scale(1.1); box-shadow: 0 14px 24px rgba(0,0,0,.3); pointer-events: none; }
+  .chip.wrong, .tile.wrong, .step.wrong { animation: wobble .45s ease; background: #c9c3dd !important; }
+  .chip.right, .step.right { background: #c9f5dd; }
+  .bin { flex: 1 1 200px; max-width: 320px; min-height: 160px; border-radius: 24px; border: 5px dashed rgba(124,92,255,.5); background: rgba(255,255,255,.45); padding: 8px; }
+  .bin.over { background: rgba(255,210,63,.45); border-style: solid; }
+  .bin b { display: block; font-size: 26px; color: var(--purple); text-align: center; margin-bottom: 6px; }
+  .bin .slot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 100px; } .bin .chip { width: 92px; height: 92px; } .bin .chip .em { font-size: 42px; }
+  .orderlist { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 640px; }
+  .step { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 20px; padding: 14px 18px; font-size: 26px; font-weight: 600; text-align: left;
+    box-shadow: 0 6px 0 rgba(0,0,0,.15); touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .step .num { flex: 0 0 48px; height: 48px; border-radius: 50%; background: var(--purple); color: #fff; display: grid; place-items: center; font-size: 24px; }
+  .step .grip { margin-left: auto; color: #bbb; font-size: 28px; }
+  .step.sel { outline: 6px solid var(--yellow); } .step.dragging { position: fixed; z-index: 50; box-shadow: 0 14px 24px rgba(0,0,0,.3); pointer-events: none; }
+  .chip.gap, .step.gap { opacity: .25; }
+  .slots .slotbox { width: 76px; height: 86px; border-radius: 16px; border: 5px dashed rgba(124,92,255,.5); background: rgba(255,255,255,.5); display: grid; place-items: center; font-size: 48px; font-weight: 700; color: var(--purple); }
+  .slots .slotbox.filled { border-style: solid; background: #fff; }
+  .tile { width: 76px; height: 86px; border-radius: 16px; background: var(--blue); color: #fff; font-size: 48px; font-weight: 700; } .tile.used { visibility: hidden; }
+  .check { font-size: 30px; padding: 14px 44px; background: var(--green); color: #fff; border-radius: 999px; font-weight: 700; margin-top: 4px; }
+  .numline { width: 100%; max-width: 760px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .numline .knob { fill: var(--pink); stroke: #fff; stroke-width: 6; } .numline .val { font-size: 34px; font-weight: 700; fill: var(--purple); }
+  .numline .lbl { font-size: 22px; font-weight: 600; fill: #333; } .numline.right .knob { fill: var(--green); }
+  .visual svg.tapart { width: 300px; height: 300px; max-width: 90vw; }
+  .tapart [data-part] { cursor: pointer; } .tapart [data-part].right { filter: drop-shadow(0 0 14px #2ec27e); } .tapart [data-part].wrong { opacity: .35; }
+  .taphint { font-size: 30px; font-weight: 600; color: var(--purple); }
   @keyframes grow { 50% { transform: scale(1.1); } }
   @keyframes wobble { 20%, 60% { transform: translateX(-12px) rotate(-3deg); } 40%, 80% { transform: translateX(12px) rotate(3deg); } }
   .hear { position: absolute; top: 10px; right: 10px; width: 52px; height: 52px; border-radius: 50%;
@@ -499,7 +531,7 @@
 </section>
 
 <script src="lessons.js?v=4"></script>
-<script src="questions.js?v=9"></script>
+<script src="questions.js?v=10"></script>
 <script>
 // ---------- Storage ----------
 const $ = s => document.querySelector(s);
@@ -711,7 +743,9 @@ function nextQuestion() {
   lastKey = q.key; locked = false; misses = 0;
   $('#visual').innerHTML = q.visual;
   $('#prompt').textContent = q.text;
-  const box = $('#choices'); box.innerHTML = '';
+  const box = $('#choices'); box.innerHTML = ''; box.className = 'choices';
+  $('#visual').classList.toggle('tappable', !!(q.touch && q.touch.kind === 'tap'));
+  if (q.touch) renderTouch(q.touch, box);
   const longChoices = q.choices.some(c => String(c).length > 9); // same size for every button in a question
   q.choices.forEach(c => {
     const wrap = document.createElement('div'); wrap.className = 'choice';
@@ -735,43 +769,210 @@ function buddy(cls) {
 }
 function answer(btn, val) {
   if (locked || btn.disabled) return;
-  if (val === q.answer) {
-    locked = true; btn.classList.add('right'); sfx.right(); buddy('happy');
-    correct++; renderStars(true);
-    setBank(getBank() + S.secsPerAnswer);
-    floatText(btn, `+${fmt(S.secsPerAnswer)} 📺`);
-    // Streaks only count answers that were right the first time.
-    streak = misses ? 0 : streak + 1; renderStreak();
-    const cheer = !misses && STREAK_CHEERS[streak];
-    const newLevel = recordAnswer(q.subject, !misses);
-    let delay = 1400;
-    if (newLevel) {
-      const up = newLevel === LEVELS[q.subject][1];
-      setTimeout(() => {
-        banner(up ? `⬆️ Level up! ${levelName(q.subject, newLevel)}` : levelName(q.subject, newLevel), true);
-        if (up) { sfx.levelUp(); confetti(25); say(`Level up! Now ${levelName(q.subject, newLevel)}!`); }
-      }, 700);
-      delay = 3200;
-    } else if (cheer) {
-      banner(cheer[0], streak >= 5); sfx.streak(); say(cheer[1]);
-      if (streak >= 5) confetti(20);
-      delay = 2200;
-    } else say(pick(PRAISE));
-    setTimeout(() => correct >= S.goal ? finishRound() : nextQuestion(), delay);
-  } else {
-    btn.classList.add('wrong'); btn.disabled = true; misses++;
-    sfx.wrong(); buddy('oops');
-    streak = 0; renderStreak();
-    // After two misses (or one, when only two choices), show the answer and move on so nobody gets stuck.
-    if (misses >= Math.min(2, q.choices.length - 1)) {
-      locked = true;
-      const right = [...document.querySelectorAll('.ans')].find(b => b.textContent === String(q.answer));
-      right.classList.add('right');
-      say(`The answer is ${q.answer}. Let's try another one!`);
-      recordAnswer(q.subject, false);
-      setTimeout(nextQuestion, 2200);
-    } else say(pick(RETRY));
+  if (val === q.answer) succeed(btn);
+  else { btn.disabled = true; miss(btn, () => [...document.querySelectorAll('.ans')].find(b => b.textContent === String(q.answer)).classList.add('right'), String(q.answer)); }
+}
+function succeed(el) {
+  locked = true; el.classList.add('right'); sfx.right(); buddy('happy');
+  correct++; renderStars(true);
+  setBank(getBank() + S.secsPerAnswer);
+  floatText(el, `+${fmt(S.secsPerAnswer)} 📺`);
+  // Streaks only count answers that were right the first time.
+  streak = misses ? 0 : streak + 1; renderStreak();
+  const cheer = !misses && STREAK_CHEERS[streak];
+  const newLevel = recordAnswer(q.subject, !misses);
+  let delay = 1400;
+  if (newLevel) {
+    const up = newLevel === LEVELS[q.subject][1];
+    setTimeout(() => {
+      banner(up ? `⬆️ Level up! ${levelName(q.subject, newLevel)}` : levelName(q.subject, newLevel), true);
+      if (up) { sfx.levelUp(); confetti(25); say(`Level up! Now ${levelName(q.subject, newLevel)}!`); }
+    }, 700);
+    delay = 3200;
+  } else if (cheer) {
+    banner(cheer[0], streak >= 5); sfx.streak(); say(cheer[1]);
+    if (streak >= 5) confetti(20);
+    delay = 2200;
+  } else say(pick(PRAISE));
+  setTimeout(() => correct >= S.goal ? finishRound() : nextQuestion(), delay);
+}
+// A wrong try. `reveal` shows the right answer; `spoken` is how to say it. After two misses (or one, when
+// only two choices) the answer is shown and we move on so nobody gets stuck.
+function miss(el, reveal, spoken) {
+  if (el) { el.classList.remove('wrong'); void el.offsetWidth; el.classList.add('wrong'); }
+  misses++; sfx.wrong(); buddy('oops');
+  streak = 0; renderStreak();
+  if (misses >= (q.touch ? 2 : Math.min(2, q.choices.length - 1))) {
+    locked = true; reveal();
+    say(`The answer is ${spoken}. Let's try another one!`);
+    recordAnswer(q.subject, false);
+    setTimeout(nextQuestion, 2600);
+  } else say(pick(RETRY));
+}
+
+// ---------- Touch questions ----------
+// Finger-drag for chips and steps. A short press with no movement counts as a tap (onTap); a real drag
+// calls onDrop with the element under the finger when it is let go.
+function draggable(el, { onTap, onDrop, onMove }) {
+  el.addEventListener('pointerdown', e => {
+    if (locked) return;
+    e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch {}
+    const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top, x0 = e.clientX, y0 = e.clientY;
+    let moved = false, ghost = null;
+    const move = ev => {
+      if (!moved && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 8) return;
+      if (!moved) {
+        moved = true; ghost = el.cloneNode(true); ghost.classList.add('gap'); el.after(ghost);
+        el.classList.add('dragging'); el.style.width = r.width + 'px'; el.style.height = r.height + 'px';
+      }
+      el.style.left = ev.clientX - dx + 'px'; el.style.top = ev.clientY - dy + 'px';
+      if (onMove) onMove(ev, ghost);
+    };
+    const up = ev => {
+      el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+      if (!moved) { onTap && onTap(); return; }
+      el.classList.remove('dragging'); el.style.cssText = '';
+      const target = document.elementFromPoint(ev.clientX, ev.clientY);
+      ghost.replaceWith(el); // back where it was unless onDrop moves it
+      onDrop && onDrop(target, ev);
+    };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  });
+}
+function checkButton(box, onCheck) {
+  const b = document.createElement('button'); b.className = 'pbtn chunky check hidden'; b.textContent = 'Check ✓';
+  b.onclick = () => { if (!locked) onCheck(); }; box.append(b); return b;
+}
+function renderTouch(t, box) {
+  box.classList.add('touch');
+  ({ sort: renderSort, order: renderOrder, build: renderBuild, line: renderLine, tap: renderTap })[t.kind](t, box);
+}
+function renderSort(t, box) {
+  const tray = document.createElement('div'); tray.className = 'tray';
+  const bins = document.createElement('div'); bins.className = 'bins';
+  const binEls = {};
+  for (const b of t.bins) {
+    const d = document.createElement('div'); d.className = 'bin'; d.dataset.bin = b; d.innerHTML = `<b>${esc(b)}</b><div class="slot"></div>`;
+    d.onclick = () => { const sel = box.querySelector('.chip.sel'); if (sel && !locked) { sel.classList.remove('sel'); place(sel, d); } };
+    bins.append(d); binEls[b] = d;
   }
+  const check = checkButton(box, () => {
+    const wrong = chips.filter(c => c.closest('.bin')?.dataset.bin !== q.answer[c.dataset.label]);
+    if (!wrong.length) { chips.forEach(c => c.classList.add('right')); return succeed(check); }
+    wrong.forEach(c => { c.classList.add('wrong'); });
+    const spoken = Object.entries(q.answer).map(([l, b]) => `${l} is ${b}`).join(', ');
+    miss(null, () => chips.forEach(c => { c.classList.remove('wrong'); c.classList.add('right'); binEls[q.answer[c.dataset.label]].querySelector('.slot').append(c); }), spoken);
+    if (!locked) setTimeout(() => wrong.forEach(c => { c.classList.remove('wrong'); tray.append(c); check.classList.add('hidden'); }), 600);
+  });
+  const place = (chip, bin) => { bin.querySelector('.slot').append(chip); check.classList.toggle('hidden', tray.children.length > 0); };
+  const chips = t.items.map(it => {
+    const c = document.createElement('div'); c.className = 'chip'; c.dataset.label = it.label;
+    c.innerHTML = `<span class="em">${it.emoji}</span><small>${esc(it.label)}</small>`;
+    draggable(c, {
+      onTap: () => { if (locked) return; const was = c.classList.contains('sel'); box.querySelectorAll('.chip.sel').forEach(x => x.classList.remove('sel')); if (!was) { c.classList.add('sel'); say(it.label); } },
+      onMove: ev => { const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.bin'); bins.querySelectorAll('.bin').forEach(b => b.classList.toggle('over', b === over)); },
+      onDrop: target => { bins.querySelectorAll('.bin').forEach(b => b.classList.remove('over')); const bin = target?.closest('.bin'); if (bin) place(c, bin); else { tray.append(c); check.classList.add('hidden'); } },
+    });
+    tray.append(c); return c;
+  });
+  box.prepend(bins); box.prepend(tray);
+}
+function renderOrder(t, box) {
+  const list = document.createElement('div'); list.className = 'orderlist';
+  const renumber = () => { let i = 0; for (const el of list.children) if (!el.classList.contains('dragging')) el.querySelector('.num').textContent = ++i; }; // the gap stands in for the step being dragged
+  const steps = t.items.map(text => {
+    const el = document.createElement('div'); el.className = 'step'; el.dataset.text = text;
+    el.innerHTML = `<span class="num"></span><span>${esc(text)}</span><span class="grip">☰</span>`;
+    draggable(el, {
+      onTap: () => { // tap one, then another, to swap them
+        if (locked) return;
+        const sel = list.querySelector('.step.sel');
+        if (!sel) { el.classList.add('sel'); say(text); return; }
+        sel.classList.remove('sel'); if (sel === el) return;
+        const a = document.createElement('div'); sel.after(a); el.after(sel); a.replaceWith(el); renumber();
+      },
+      onMove: (ev, ghost) => { // slide the gap to where the finger is
+        const others = [...list.children].filter(x => x !== ghost && x !== el);
+        const next = others.find(x => ev.clientY < x.getBoundingClientRect().top + x.offsetHeight / 2);
+        if (next) list.insertBefore(ghost, next); else list.append(ghost);
+        renumber();
+      },
+      onDrop: () => renumber(),
+    });
+    list.append(el); return el;
+  });
+  const check = checkButton(box, () => {
+    const now = [...list.children].map(x => x.dataset.text);
+    if (now.join('\n') === q.answer.join('\n')) { steps.forEach(x => x.classList.add('right')); return succeed(check); }
+    now.forEach((txt, i) => { if (txt !== q.answer[i]) list.children[i].classList.add('wrong'); });
+    miss(null, () => { q.answer.forEach(txt => list.append(steps.find(x => x.dataset.text === txt))); steps.forEach(x => { x.classList.remove('wrong'); x.classList.add('right'); }); renumber(); },
+      q.answer.join(', then '));
+    setTimeout(() => steps.forEach(x => x.classList.remove('wrong')), 600);
+  });
+  check.classList.remove('hidden');
+  box.prepend(list); renumber();
+}
+function renderBuild(t, box) {
+  const slots = document.createElement('div'); slots.className = 'slots';
+  const tiles = document.createElement('div'); tiles.className = 'tiles';
+  const word = q.answer, slotEls = [...word].map(() => { const d = document.createElement('div'); d.className = 'slotbox'; slots.append(d); return d; });
+  const check = checkButton(box, () => {
+    const typed = slotEls.map(d => d.textContent).join('');
+    if (typed === word) { slotEls.forEach(d => d.classList.add('right')); return succeed(check); }
+    slotEls.forEach((d, i) => { if (d.textContent !== word[i]) d.classList.add('wrong'); });
+    miss(null, () => { slotEls.forEach((d, i) => { d.classList.remove('wrong'); d.textContent = word[i]; d.classList.add('filled', 'right'); }); tiles.querySelectorAll('.tile').forEach(x => x.classList.add('used')); },
+      [...word].join(', ') + `. ${word}`);
+    setTimeout(() => slotEls.forEach(d => d.classList.remove('wrong')), 600);
+  });
+  const update = () => check.classList.toggle('hidden', slotEls.some(d => !d.textContent));
+  for (const letter of t.tiles) {
+    const b = document.createElement('button'); b.className = 'tile chunky'; b.textContent = letter;
+    b.onclick = () => {
+      if (locked || b.classList.contains('used')) return;
+      const empty = slotEls.find(d => !d.textContent); if (!empty) return;
+      empty.textContent = letter; empty.classList.add('filled'); empty.tile = b; b.classList.add('used'); say(letter); update();
+    };
+    tiles.append(b);
+  }
+  slotEls.forEach(d => d.onclick = () => { if (locked || !d.textContent) return; d.tile.classList.remove('used'); d.textContent = ''; d.classList.remove('filled'); update(); });
+  box.prepend(tiles); box.prepend(slots);
+}
+function renderLine(t, box) {
+  const W = 760, H = 150, L = 50, R = W - 50, Y = 80, ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg'); svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.classList.add('numline');
+  const X = v => L + (v - t.min) / (t.max - t.min) * (R - L);
+  let html = `<line x1="${L}" y1="${Y}" x2="${R}" y2="${Y}" stroke="#333" stroke-width="6" stroke-linecap="round"/>`;
+  for (let v = t.min; v <= t.max + 1e-9; v += t.tick) html += `<line x1="${X(v)}" y1="${Y - 12}" x2="${X(v)}" y2="${Y + 12}" stroke="#333" stroke-width="4"/>`;
+  for (const [v, label] of t.labels) html += `<text class="lbl" x="${X(v)}" y="${Y + 42}" text-anchor="middle">${esc(label)}</text>`;
+  html += `<text class="val" id="lineVal" x="${X(t.min)}" y="${Y - 30}" text-anchor="middle"></text><circle class="knob" id="lineKnob" cx="${X(t.min)}" cy="${Y}" r="22"/>`;
+  svg.innerHTML = html;
+  let value = null;
+  const knob = svg.querySelector('#lineKnob'), val = svg.querySelector('#lineVal');
+  const label = v => (t.labels.find(l => l[0] === v) || [])[1] ?? String(v);
+  const setFrom = clientX => {
+    const r = svg.getBoundingClientRect(), x = (clientX - r.left) / r.width * W;
+    let v = t.min + Math.round((x - L) / (R - L) * (t.max - t.min) / t.step) * t.step;
+    v = Math.min(t.max, Math.max(t.min, v)); value = v;
+    knob.setAttribute('cx', X(v)); val.setAttribute('x', X(v)); val.textContent = label(v); check.classList.remove('hidden');
+  };
+  svg.addEventListener('pointerdown', e => { if (locked) return; e.preventDefault(); try { svg.setPointerCapture(e.pointerId); } catch {} setFrom(e.clientX);
+    const mv = ev => setFrom(ev.clientX), up = () => { svg.removeEventListener('pointermove', mv); svg.removeEventListener('pointerup', up); say(label(value)); };
+    svg.addEventListener('pointermove', mv); svg.addEventListener('pointerup', up); });
+  const check = checkButton(box, () => {
+    if (value === q.answer) { svg.classList.add('right'); return succeed(check); }
+    knob.classList.add('wrong');
+    miss(null, () => { value = q.answer; knob.setAttribute('cx', X(q.answer)); val.setAttribute('x', X(q.answer)); val.textContent = label(q.answer); svg.classList.add('right'); }, label(q.answer));
+  });
+  box.prepend(svg);
+}
+function renderTap(t, box) {
+  const hint = document.createElement('div'); hint.className = 'taphint'; hint.textContent = '👆 Tap the picture'; box.append(hint);
+  const parts = [...$('#visual').querySelectorAll('[data-part]')];
+  for (const p of parts) p.addEventListener('click', () => {
+    if (locked || p.classList.contains('wrong')) return;
+    if (p.dataset.part === q.answer) succeed(p);
+    else miss(p, () => parts.find(x => x.dataset.part === q.answer).classList.add('right'), q.answer);
+  });
 }
 function floatText(el, text) {
   const r = el.getBoundingClientRect(), f = document.createElement('div');

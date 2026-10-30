@@ -674,26 +674,124 @@
   };
 
   // Which question types each grade and level serves. Level 2 adds the harder ones.
+
+  // ---------- Touch questions: drag, tap, build and slide ----------
+  // These carry a `touch` description instead of buttons (choices is empty). The game renders the widget;
+  // `answer` holds what a correct result looks like so the checker can verify it.
+  const TRAY = '<div class="pic small">🧺</div>';
+  function sortQ(grade) {
+    const kind = pick(grade === 1 ? ['living', 'matter', 'group'] : ['living', 'matter', 'group', 'group']);
+    let bins, pool;
+    if (kind === 'living') { bins = ['living', 'non-living']; pool = bins.flatMap(b => Lessons.LIVING[b].map(([label, emoji]) => ({ label, emoji, bin: b }))); }
+    else if (kind === 'matter') { bins = grade === 1 ? ['solid', 'liquid'] : ['solid', 'liquid', 'gas']; pool = bins.flatMap(b => Lessons.MATTER[b].map(([label, emoji]) => ({ label, emoji, bin: b }))); }
+    else {
+      bins = pickN(Lessons.GROUPS[grade], grade === 1 ? 2 : 3);
+      pool = Object.entries(Lessons.ANIMALS).filter(([, [, g, min]]) => min <= grade && bins.includes(g)).map(([label, [emoji, g]]) => ({ label, emoji, bin: g }));
+    }
+    const count = grade === 1 ? 4 : 6, items = [], used = new Set();
+    for (const b of bins) { const c = pick(pool.filter(x => x.bin === b)); items.push(c); used.add(c.emoji); } // one of each, so every box gets used
+    for (const x of shuffle(pool)) { if (items.length >= count) break; if (!items.includes(x) && !used.has(x.emoji)) { items.push(x); used.add(x.emoji); } }
+    const shown = shuffle(items), list = bins.length > 2 ? bins.slice(0, -1).join(', ') + ' or ' + bins[bins.length - 1] : bins.join(' or ');
+    return { key: `sort${kind}${shown.map(i => i.label).join(',')}`, visual: TRAY, text: `Drag each one into the right box: ${list}?`,
+      say: `Drag each picture into the right box. Is it ${list}?`, choices: [], answer: Object.fromEntries(shown.map(i => [i.label, i.bin])),
+      touch: { kind: 'sort', bins, items: shown }, sortKind: kind };
+  }
+  const notInOrder = (steps) => { let s; do s = shuffle(steps); while (s.join() === steps.join()); return s; };
+  function sequenceQ(grade) {
+    const item = pick(Lessons.SEQUENCES.filter(x => x.g === grade)), steps = item.steps, shown = notInOrder(steps);
+    return { key: `seq${steps[0]}`, visual: '<div class="pic small">🔢</div>', text: 'Put these in order: first to last.',
+      say: `Put these in order, from first to last: ${shown.join('. ')}.`, choices: [], answer: steps, touch: { kind: 'order', items: shown }, item };
+  }
+  function lifeorderQ() {
+    const name = pick(Object.keys(Lessons.LIFECYCLES)), [emoji, stages] = Lessons.LIFECYCLES[name], shown = notInOrder(stages);
+    return { key: `lifeorder${name}`, visual: picHtml(emoji, `life of a ${name}`), text: `Put the life of a ${name} in order.`,
+      say: `Put the life of a ${name} in order, from first to last: ${shown.join('. ')}.`, choices: [], answer: stages, touch: { kind: 'order', items: shown }, name };
+  }
+  // Tap-the-part pictures. Each tappable part is a <g data-part="…">; the game lights it up when tapped.
+  const PLANT_TAP = ['roots', 'stem', 'leaves', 'flower'];
+  const plantSvg = () => `<svg class="tapart" viewBox="0 0 300 320" aria-label="a plant">
+    <rect x="0" y="230" width="300" height="90" fill="#c9a26b" rx="10"/>
+    <g data-part="roots"><path d="M150 232 l-40 40 M150 232 l-12 55 M150 232 l14 58 M150 232 l42 36 M110 272 l-16 20 M192 268 l18 22" stroke="#8a5a2b" stroke-width="10" stroke-linecap="round" fill="none"/><rect x="90" y="232" width="120" height="70" fill="transparent"/></g>
+    <g data-part="stem"><rect x="140" y="80" width="20" height="155" rx="10" fill="#3c9a3c"/><rect x="118" y="80" width="64" height="155" fill="transparent"/></g>
+    <g data-part="leaves"><ellipse cx="100" cy="170" rx="44" ry="22" fill="#5ec25e" transform="rotate(-20 100 170)"/><ellipse cx="200" cy="140" rx="44" ry="22" fill="#5ec25e" transform="rotate(20 200 140)"/></g>
+    <g data-part="flower"><g fill="#ffb3d1">${[0, 60, 120, 180, 240, 300].map(a => `<ellipse cx="150" cy="30" rx="20" ry="30" transform="rotate(${a} 150 70)"/>`).join('')}</g><circle cx="150" cy="70" r="26" fill="#ffd23f"/></g>
+  </svg>`;
+  const SENSE_PART = { sight: 'eyes', hearing: 'ears', smell: 'nose', taste: 'mouth', touch: 'hand' };
+  const bodySvg = () => `<svg class="tapart" viewBox="0 0 360 300" aria-label="a face and a hand">
+    <circle cx="150" cy="150" r="105" fill="#f8d3b0"/>
+    <g data-part="ears"><ellipse cx="42" cy="150" rx="24" ry="36" fill="#f4c7a1" stroke="#e0a880" stroke-width="4"/><ellipse cx="258" cy="150" rx="24" ry="36" fill="#f4c7a1" stroke="#e0a880" stroke-width="4"/></g>
+    <g data-part="eyes"><circle cx="110" cy="120" r="22" fill="#fff"/><circle cx="190" cy="120" r="22" fill="#fff"/><circle cx="112" cy="124" r="11" fill="#3a2a1a"/><circle cx="192" cy="124" r="11" fill="#3a2a1a"/></g>
+    <g data-part="nose"><path d="M150 138 l-20 50 h40 z" fill="#d9926a" stroke="#b87350" stroke-width="3" stroke-linejoin="round"/><rect x="120" y="135" width="60" height="58" fill="transparent"/></g>
+    <g data-part="mouth"><path d="M105 205 q45 40 90 0" stroke="#c0392b" stroke-width="12" fill="none" stroke-linecap="round"/><rect x="95" y="190" width="110" height="50" fill="transparent"/></g>
+    <g data-part="hand"><path d="M300 290 v-90 a14 14 0 0 1 28 0 v30 v-70 a14 14 0 0 1 28 0 v70 v-60 a14 14 0 0 1 28 0 v60 v-40 a14 14 0 0 1 28 0 v70 q0 60 -56 60 z" fill="#f4c7a1" transform="translate(-30 0)"/></g>
+  </svg>`;
+  function plantlabelQ() {
+    const ans = pick(PLANT_TAP), job = pick(Lessons.PLANT_PARTS[ans]);
+    return { key: `tapplant${job}`, visual: plantSvg(), text: `Tap the part that ${job}.`, say: `Tap the part of the plant that ${job}.`,
+      choices: [], answer: ans, touch: { kind: 'tap', parts: PLANT_TAP }, job };
+  }
+  function sensetapQ() {
+    const sense = pick(Object.keys(Lessons.SENSES)), act = pick(Lessons.SENSES[sense][1]), ans = SENSE_PART[sense];
+    return { key: `tapsense${act}`, visual: bodySvg(), text: `Tap what you use to ${act}.`, say: `Tap the part you use to ${act}.`,
+      choices: [], answer: ans, touch: { kind: 'tap', parts: Object.values(SENSE_PART) }, act, sense };
+  }
+  // Build a word from letter tiles: picture words in grade 1, long-vowel words in grade 2, tricky spellings in grade 3.
+  const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+  function buildQ(grade) {
+    const word = grade === 1 ? pick(CVC) : grade === 2 ? pick(Object.values(LONG).flat()) : pick(Object.keys(SPELLING));
+    const extra = pickN([...ALPHA].filter(c => !word.includes(c)), grade === 1 ? 1 : 2);
+    const tiles = shuffle([...word, ...extra]);
+    return { key: `build${word}`, visual: grade === 1 ? pic(word) : '<div class="pic ear">👂</div>', text: grade === 1 ? 'Build the word!' : 'Spell the word you hear.',
+      say: `Spell the word: ${word}.`, choices: [], answer: word, touch: { kind: 'build', tiles }, hint: word };
+  }
+  // Number line: slide the marker to a number (or a rounded number, or a fraction).
+  function lineQ(min, max, step, tick, labels, target, text, say, extra = {}) {
+    return Object.assign({ visual: '<div class="pic small">📏</div>', text, say, choices: [], answer: target, touch: { kind: 'line', min, max, step, tick, labels } }, extra);
+  }
+  const every = (max, n) => Array.from({ length: max / n + 1 }, (_, i) => [i * n, String(i * n)]);
+  function numline1(max) {
+    const t = rand(1, max - 1);
+    return lineQ(0, max, 1, 1, every(max, max === 10 ? 1 : 5), t, `Slide to ${t}.`, `Slide the marker to ${t}.`, { key: `line${max}_${t}`, n: [t] });
+  }
+  function numline2(level) {
+    const t = level === 1 ? rand(1, 9) * 10 : rand(1, 19) * 5;
+    return lineQ(0, 100, 5, 5, every(100, 10), t, `Slide to ${t}.`, `Slide the marker to ${t}.`, { key: `line100_${t}`, n: [t] });
+  }
+  function numline3(level) {
+    if (level === 1) {
+      const n = rand(11, 99); if (n % 10 === 0) return numline3(level);
+      const t = Math.round(n / 10) * 10;
+      return lineQ(0, 100, 10, 10, every(100, 10), t, `Round ${n} to the nearest ten. Slide there!`, `Round ${n} to the nearest ten, and slide the marker there.`, { key: `lineround${n}`, n: [n, 10] });
+    }
+    const d = pick([2, 3, 4]), k = rand(1, d - 1);
+    const labels = Array.from({ length: d + 1 }, (_, i) => [i, i === 0 ? '0' : i === d ? '1' : `${i}/${d}`]);
+    return lineQ(0, d, 1, 1, labels, k, `Slide to ${k}/${d}.`, `Slide the marker to ${k} ${d === 2 ? 'half' : d === 3 ? 'third' : 'quarter'}${k > 1 ? 's' : ''}.`, { key: `linefrac${k}/${d}`, n: [k, d] });
+  }
+  math1.numline = numline1; math2.numline = numline2; math3.numline = numline3;
+  phonics1.build = () => buildQ(1); phonics2.build = () => buildQ(2); phonics3.build = () => buildQ(3);
+  reading.sequence = sequenceQ;
+  science.sort = sortQ; science.lifeorder = lifeorderQ; science.plantlabel = plantlabelQ; science.sensetap = sensetapQ;
+
   const MIX = {
     math: {
-      1: { 1: ['add', 'add', 'sub', 'count', 'compare', 'clock', 'tenframe', 'doubles'], 2: ['add', 'sub', 'sub', 'count', 'missing', 'compare', 'clock', 'tenframe', 'doubles'] },
-      2: { 1: ['add', 'sub', 'skip', 'place', 'evenodd', 'compare', 'clock', 'story', 'story', 'array'], 2: ['add', 'sub', 'skip', 'place', 'clock', 'money', 'evenodd', 'story', 'story', 'array'] },
-      3: { 1: ['mult', 'mult', 'div', 'add', 'round', 'fraction', 'clock', 'area', 'cmpfrac'], 2: ['mult', 'div', 'factor', 'add', 'sub', 'round', 'fraction', 'clock', 'area', 'cmpfrac'] },
+      1: { 1: ['add', 'add', 'sub', 'count', 'compare', 'clock', 'tenframe', 'doubles', 'numline'], 2: ['add', 'sub', 'sub', 'count', 'missing', 'compare', 'clock', 'tenframe', 'doubles', 'numline'] },
+      2: { 1: ['add', 'sub', 'skip', 'place', 'evenodd', 'compare', 'clock', 'story', 'story', 'array', 'numline'], 2: ['add', 'sub', 'skip', 'place', 'clock', 'money', 'evenodd', 'story', 'story', 'array', 'numline'] },
+      3: { 1: ['mult', 'mult', 'div', 'add', 'round', 'fraction', 'clock', 'area', 'cmpfrac', 'numline'], 2: ['mult', 'div', 'factor', 'add', 'sub', 'round', 'fraction', 'clock', 'area', 'cmpfrac', 'numline'] },
     },
     reading: {
-      1: { 1: ['passage', 'passage', 'passage', 'order'], 2: ['passage', 'passage', 'passage', 'order'] },
-      2: { 1: ['passage', 'passage', 'passage', 'order'], 2: ['passage', 'passage', 'passage', 'order'] },
-      3: { 1: ['passage', 'passage', 'passage', 'order'], 2: ['passage', 'passage', 'passage', 'order'] },
+      1: { 1: ['passage', 'passage', 'passage', 'order', 'sequence'], 2: ['passage', 'passage', 'passage', 'order', 'sequence'] },
+      2: { 1: ['passage', 'passage', 'passage', 'order', 'sequence'], 2: ['passage', 'passage', 'passage', 'order', 'sequence'] },
+      3: { 1: ['passage', 'passage', 'passage', 'order', 'sequence'], 2: ['passage', 'passage', 'passage', 'order', 'sequence'] },
     },
     science: {
-      1: { 1: ['living', 'group', 'sense', 'matter', 'needs', 'push', 'fact', 'fact'], 2: ['living', 'group', 'sense', 'matter', 'habitat', 'lifecycle', 'plantpart', 'bodypart', 'moon', 'fact', 'fact'] },
-      2: { 1: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'bodypart', 'needs', 'push', 'moon', 'fact', 'fact'], 2: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'bodypart', 'moon', 'fact', 'fact', 'fact'] },
-      3: { 1: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'plantpart', 'bodypart'], 2: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'matter', 'moon'] },
+      1: { 1: ['living', 'group', 'sense', 'matter', 'needs', 'push', 'fact', 'fact', 'sort', 'sensetap'], 2: ['living', 'group', 'sense', 'matter', 'habitat', 'lifecycle', 'plantpart', 'bodypart', 'moon', 'fact', 'fact', 'sort', 'sensetap', 'plantlabel', 'lifeorder'] },
+      2: { 1: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'bodypart', 'needs', 'push', 'moon', 'fact', 'fact', 'sort', 'sensetap', 'plantlabel', 'lifeorder'], 2: ['group', 'habitat', 'lifecycle', 'matter', 'plantpart', 'bodypart', 'moon', 'fact', 'fact', 'fact', 'sort', 'plantlabel', 'lifeorder'] },
+      3: { 1: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'plantpart', 'bodypart', 'sort', 'plantlabel', 'lifeorder'], 2: ['fact', 'fact', 'fact', 'group', 'habitat', 'lifecycle', 'matter', 'moon', 'sort', 'lifeorder'] },
     },
     phonics: {
-      1: { 1: ['begin', 'begin', 'begin', 'sight', 'sight', 'cvc'], 2: ['begin', 'begin', 'cvc', 'cvc', 'rhyme', 'sight', 'sight'] },
-      2: { 1: ['blend', 'blend', 'longvowel', 'sight', 'syllable', 'compound'], 2: ['blend', 'longvowel', 'plural', 'plural', 'compound', 'contraction', 'sight', 'syllable'] },
-      3: { 1: ['antonym', 'synonym', 'spelling', 'spelling', 'sight', 'syllable', 'past'], 2: ['antonym', 'synonym', 'spelling', 'prefix', 'past', 'irregular', 'homophone', 'homophone'] },
+      1: { 1: ['begin', 'begin', 'begin', 'sight', 'sight', 'cvc', 'build'], 2: ['begin', 'begin', 'cvc', 'cvc', 'rhyme', 'sight', 'sight', 'build'] },
+      2: { 1: ['blend', 'blend', 'longvowel', 'sight', 'syllable', 'compound', 'build'], 2: ['blend', 'longvowel', 'plural', 'plural', 'compound', 'contraction', 'sight', 'syllable', 'build'] },
+      3: { 1: ['antonym', 'synonym', 'spelling', 'spelling', 'sight', 'syllable', 'past', 'build'], 2: ['antonym', 'synonym', 'spelling', 'prefix', 'past', 'irregular', 'homophone', 'homophone', 'build'] },
     },
   };
   const GENERATORS = { math: { 1: math1, 2: math2, 3: math3 }, phonics: { 1: phonics1, 2: phonics2, 3: phonics3 },
@@ -720,7 +818,7 @@
   }
 
   const api = { generate, LEVEL_NAMES, MIX, SUBJECTS, data: { PICS, CVC, RHYMES, SIGHT, LETTERS, SAME_SOUND, COINS, STORIES, BLENDS, LONG, PLURALS, COMPOUNDS,
-    CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES, SOUND_ALIKE } };
+    CONTRACTIONS, SYLLABLES, ANTONYMS, SYNONYMS, SPELLING, PREFIXES, PREFIX_WORDS, PAST, IRREGULAR, HOMOPHONES, SOUND_ALIKE, PLANT_TAP, SENSE_PART } };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Questions = api;
 })(this);

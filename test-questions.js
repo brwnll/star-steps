@@ -65,6 +65,8 @@ for (let i = 0; i < N; i++) {
   keys.add(q.key); typesSeen.add(`${q.subject}${q.grade}.${q.type}`);
   const { choices, answer, n } = q;
 
+  if (q.touch) { checkTouch(q, grade, level); continue; }
+
   // Shared rules
   if (new Set(choices.map(String)).size !== choices.length) fail(q, 'Duplicate choices');
   if (choices.filter(c => c === answer).length !== 1) fail(q, 'Answer not in choices exactly once');
@@ -221,6 +223,70 @@ for (let i = 0; i < N; i++) {
       }
       default: fail(q, 'Unknown phonics type');
     }
+  }
+}
+
+// Touch questions (drag, tap, build, slide) carry a widget description instead of buttons.
+function checkTouch(q, grade, level) {
+  const t = q.touch;
+  if (q.choices.length) fail(q, 'Touch question should have no buttons');
+  if (!q.say || !q.text || !q.visual) fail(q, 'Missing text');
+  if (q.grade !== grade || q.level !== level) fail(q, 'Wrong grade/level tag');
+  if (!MIX[q.subject][grade][level].includes(q.type)) fail(q, 'Type not allowed at this grade/level');
+  switch (t.kind) {
+    case 'sort': {
+      const src = { living: Lessons.LIVING, matter: Lessons.MATTER, group: null }[q.sortKind];
+      if (t.items.length !== (grade === 1 ? 4 : 6) || t.bins.length < 2) fail(q, 'Sort size wrong');
+      if (new Set(t.items.map(i => i.emoji)).size !== t.items.length) fail(q, 'Two sort items share a picture');
+      for (const b of t.bins) if (!t.items.some(i => i.bin === b)) fail(q, `Empty sort box ${b}`);
+      for (const it of t.items) {
+        if (q.answer[it.label] !== it.bin || !t.bins.includes(it.bin)) fail(q, `Sort answer wrong for ${it.label}`);
+        const ok = src ? src[it.bin].some(x => x[0] === it.label && x[1] === it.emoji)
+          : Lessons.ANIMALS[it.label] && Lessons.ANIMALS[it.label][1] === it.bin && Lessons.ANIMALS[it.label][0] === it.emoji && Lessons.ANIMALS[it.label][2] <= grade;
+        if (!ok) fail(q, `Sort item ${it.label} is not a ${it.bin}`);
+      }
+      if (q.sortKind === 'matter' && grade === 1 && t.bins.includes('gas')) fail(q, 'Gas is not grade 1');
+      if (q.sortKind === 'group' && t.bins.some(b => !Lessons.GROUPS[grade].includes(b))) fail(q, 'Group box not for this grade');
+      break;
+    }
+    case 'order': {
+      const truth = q.type === 'sequence' ? q.item.steps : Lessons.LIFECYCLES[q.name][1];
+      if (q.type === 'sequence' && q.item.g !== grade) fail(q, 'Sequence from another grade');
+      if (q.answer.join() !== truth.join()) fail(q, 'Order answer is not the real order');
+      if ([...t.items].sort().join() !== [...truth].sort().join() || t.items.join() === truth.join()) fail(q, 'Shown steps are not a shuffle of the answer');
+      if (!t.items.every(x => q.say.includes(x))) fail(q, 'Spoken question does not read every step');
+      break;
+    }
+    case 'tap': {
+      const parts = q.type === 'plantlabel' ? data.PLANT_TAP : Object.values(data.SENSE_PART);
+      if (t.parts.join() !== parts.join() || !parts.includes(q.answer)) fail(q, 'Tap parts wrong');
+      for (const p of parts) if (!q.visual.includes(`data-part="${p}"`)) fail(q, `Picture has no ${p} to tap`);
+      if (q.type === 'plantlabel' && !Lessons.PLANT_PARTS[q.answer].includes(q.job)) fail(q, 'Plant job wrong');
+      if (q.type === 'sensetap' && (data.SENSE_PART[q.sense] !== q.answer || !Lessons.SENSES[q.sense][1].includes(q.act))) fail(q, 'Sense part wrong');
+      break;
+    }
+    case 'build': {
+      const word = q.answer, pool = grade === 1 ? data.CVC : grade === 2 ? Object.values(data.LONG).flat() : Object.keys(data.SPELLING);
+      if (!pool.includes(word)) fail(q, 'Build word not from this grade');
+      const left = [...t.tiles]; for (const c of word) { const i = left.indexOf(c); if (i < 0) fail(q, `No tile for ${c}`); else left.splice(i, 1); }
+      if (left.length !== (grade === 1 ? 1 : 2) || left.some(c => word.includes(c))) fail(q, 'Extra tiles wrong');
+      if (grade === 1 && !q.visual.includes(data.PICS[word])) fail(q, 'Build picture mismatch');
+      if (!q.say.includes(word)) fail(q, 'Build word not spoken');
+      break;
+    }
+    case 'line': {
+      const a = q.answer;
+      if (typeof a !== 'number' || a < t.min || a > t.max || Math.abs((a - t.min) / t.step - Math.round((a - t.min) / t.step)) > 1e-9) fail(q, 'Line target off the steps');
+      if (!t.labels.length || t.labels[0][0] !== t.min || t.labels[t.labels.length - 1][0] !== t.max) fail(q, 'Line labels missing ends');
+      if (grade === 1 && t.max !== (level === 2 ? 20 : 10)) fail(q, 'Grade 1 line too long');
+      if (grade === 2 && (t.max !== 100 || a % (level === 1 ? 10 : 5))) fail(q, 'Grade 2 line target wrong');
+      if (grade === 3 && level === 1 && (Math.round(q.n[0] / 10) * 10 !== a || q.n[0] % 10 === 0)) fail(q, 'Rounding line wrong');
+      if (grade === 3 && level === 2 && (q.n[0] !== a || t.max !== q.n[1] || !q.text.includes(`${q.n[0]}/${q.n[1]}`))) fail(q, 'Fraction line wrong');
+      if (grade === 3 && level === 2 && !t.labels.some(l => l[1] === '1')) fail(q, 'Fraction line should end at 1');
+      if (grade < 3 && !q.text.includes(String(a))) fail(q, 'Line target not in text');
+      break;
+    }
+    default: fail(q, 'Unknown touch kind');
   }
 }
 
