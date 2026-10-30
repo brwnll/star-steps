@@ -19,7 +19,9 @@ if (new Set(data.SIGHT).size !== data.SIGHT.length) errors.push('Duplicate sight
 for (let i = 0; i < N; i++) {
   const subject = ['math', 'phonics', 'mix'][i % 3];
   const level = i % 2 ? 10 : 20;
-  const q = generate(subject, { mathLevel: level });
+  const q = generate(subject, { mathLevel: level, phonicsLevel: i % 4 < 2 ? 1 : 2 });
+  if (q.subject === 'phonics' && i % 4 < 2 && q.type === 'rhyme') fail(q, 'Rhymes are not level 1');
+  if (q.subject === 'math' && level === 10 && q.type === 'missing') fail(q, 'Missing-number is not level 1');
   keys.add(q.key);
   const { choices, answer } = q;
 

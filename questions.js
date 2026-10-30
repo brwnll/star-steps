@@ -134,14 +134,15 @@
     },
   };
 
-  const MATH_MIX = ['add', 'add', 'sub', 'sub', 'count', 'missing', 'compare'];
-  const PHONICS_MIX = ['begin', 'begin', 'cvc', 'cvc', 'rhyme', 'sight', 'sight'];
+  // Level 1 keeps to the easier question types; level 2 adds the rest.
+  const MATH_MIX = { 1: ['add', 'add', 'sub', 'count', 'count', 'compare'], 2: ['add', 'add', 'sub', 'sub', 'count', 'missing', 'compare'] };
+  const PHONICS_MIX = { 1: ['begin', 'begin', 'begin', 'sight', 'sight', 'cvc'], 2: ['begin', 'begin', 'cvc', 'cvc', 'rhyme', 'sight', 'sight'] };
 
-  // subject: 'math' | 'phonics' | 'mix'.  opts.mathLevel: 10 or 20.
+  // subject: 'math' | 'phonics' | 'mix'.  opts.mathLevel: 10 or 20.  opts.phonicsLevel: 1 or 2.
   function generate(subject, opts = {}) {
     const max = opts.mathLevel === 20 ? 20 : 10;
     const s = subject === 'mix' ? (Math.random() < 0.5 ? 'math' : 'phonics') : subject;
-    const type = pick(s === 'math' ? MATH_MIX : PHONICS_MIX);
+    const type = pick(s === 'math' ? MATH_MIX[max === 20 ? 2 : 1] : PHONICS_MIX[opts.phonicsLevel === 1 ? 1 : 2]);
     const q = s === 'math' ? math[type](max) : phonics[type]();
     return Object.assign(q, { subject: s, type, max });
   }

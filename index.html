@@ -70,6 +70,16 @@
   .topbar { width: 100%; max-width: 900px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .iconbtn { width: 68px; height: 68px; border-radius: 22px; background: #fff; font-size: 34px; }
   .stars { display: flex; gap: 6px; font-size: 52px; flex-wrap: wrap; justify-content: center; }
+  .streak { position: absolute; top: calc(96px + var(--safe-t)); right: 24px; font-size: 26px; font-weight: 700; color: #fff;
+    background: var(--orange); border-radius: 999px; padding: 6px 16px; box-shadow: 0 4px 0 rgba(0,0,0,.15); transition: transform .2s; }
+  .streak:empty { display: none; }
+  .streak.hot { background: var(--pink); transform: scale(1.15); }
+  .banner { position: fixed; left: 50%; top: 32%; transform: translate(-50%, -50%); z-index: 55; pointer-events: none;
+    font-size: 48px; font-weight: 700; color: #fff; background: var(--orange); padding: 18px 36px; border-radius: 999px;
+    box-shadow: 0 10px 0 rgba(0,0,0,.18); text-shadow: 0 3px 0 rgba(0,0,0,.2); animation: bannerIn 2s ease forwards; white-space: nowrap; }
+  .banner.big { font-size: 60px; background: var(--purple); }
+  @keyframes bannerIn { 0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; } 15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    25%, 80% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -80%) scale(.9); opacity: 0; } }
   .stars.many { font-size: 34px; gap: 2px; }
   .stars span { filter: grayscale(1) opacity(.35); transition: filter .3s; }
   .stars span.on { filter: none; }
@@ -231,6 +241,7 @@
   <div class="topbar">
     <button class="iconbtn chunky" id="quitBtn" aria-label="Home">🏠</button>
     <div class="stars" id="stars"></div>
+    <div class="streak" id="streak"></div>
     <button class="iconbtn chunky" id="hearBtn" aria-label="Hear again">🔊</button>
   </div>
   <div class="stage">
@@ -285,7 +296,10 @@
         <label class="field">Math questions <input type="checkbox" data-k="math"></label>
         <label class="field">Phonics questions <input type="checkbox" data-k="phonics"></label>
         <label class="field">Math level
-          <select data-k="mathLevel" data-num><option value="10">Numbers up to 10</option><option value="20">Numbers up to 20</option></select></label>
+          <select data-k="mathLevel"><option value="auto">Grows with your child</option><option value="10">Numbers up to 10</option><option value="20">Numbers up to 20</option></select></label>
+        <label class="field">Phonics level
+          <select data-k="phonicsLevel"><option value="auto">Grows with your child</option><option value="1">Letters &amp; sounds</option><option value="2">Words &amp; rhymes</option></select></label>
+        <p class="help" id="levelInfo"></p>
         <label class="field">Correct answers needed before a video
           <select data-k="goal" data-num>
             <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
@@ -373,7 +387,7 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
-const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, mathLevel: 10, goal: 5,
+const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, mathLevel: 'auto', phonicsLevel: 'auto', goal: 5,
   secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, kidsOnly: false };
 const S = Object.assign({}, DEFAULTS, store.get('ss.settings', {}));
 const save = () => store.set('ss.settings', S);
@@ -416,6 +430,8 @@ function tones(freqs, dur = 0.12, type = 'sine') {
 }
 const sfx = {
   right: () => tones([523, 659, 784, 1047], 0.09, 'triangle'),
+  streak: () => tones([659, 784, 988, 1319, 1568], 0.08, 'triangle'),
+  levelUp: () => tones([392, 523, 659, 784, 1047, 1319, 1568], 0.1, 'triangle'),
   wrong: () => tones([330, 247], 0.16, 'square'),
   win: () => tones([523, 659, 784, 659, 784, 1047], 0.11, 'triangle'),
   tap: () => tones([880], 0.05),
@@ -471,8 +487,45 @@ function renderHome() {
   $('#homeNote').textContent = note;
 }
 
+// ---------- Levels ----------
+// Each subject has a level that can grow with the child when the parent picks "Grows with your child".
+// recent: last answers per subject (1 = right first try, 0 = missed), used to move up or down.
+const LEVELS = { math: [10, 20], phonics: [1, 2] };
+const LEVEL_NAMES = { math: { 10: 'Numbers up to 10', 20: 'Numbers up to 20' }, phonics: { 1: 'Letters & sounds', 2: 'Words & rhymes' } };
+const getLevels = () => Object.assign({ math: 10, phonics: 1, recent: { math: [], phonics: [] } }, store.get('ss.levels', {}));
+function levelFor(sub) {
+  const setting = sub === 'math' ? S.mathLevel : S.phonicsLevel;
+  return setting === 'auto' ? getLevels()[sub] : Number(setting);
+}
+// Records an answer and returns the new level when it changed, else null.
+function recordAnswer(sub, right) {
+  const L = getLevels(), r = L.recent[sub] = [...L.recent[sub], right ? 1 : 0].slice(-8);
+  const [low, high] = LEVELS[sub], score = r.reduce((a, b) => a + b, 0);
+  let changed = null;
+  if (r.length >= 8) {
+    if (L[sub] === low && score >= 7) changed = L[sub] = high;
+    else if (L[sub] === high && score <= 4) changed = L[sub] = low;
+    if (changed) L.recent[sub] = [];
+  }
+  store.set('ss.levels', L);
+  const auto = (sub === 'math' ? S.mathLevel : S.phonicsLevel) === 'auto';
+  return auto ? changed : null;
+}
+
 // ---------- Quiz ----------
-let subject = 'mix', correct = 0, q = null, lastKey = '', locked = false, misses = 0;
+let subject = 'mix', correct = 0, q = null, lastKey = '', locked = false, misses = 0, streak = 0;
+const STREAK_CHEERS = { 3: ['🔥 3 in a row!', 'Three in a row! You are on fire!'], 5: ['⚡ 5 in a row!', 'Five in a row! Amazing!'],
+  10: ['🌈 10 in a row!', 'Ten in a row! You are a superstar!'] };
+function banner(text, big) {
+  const d = document.createElement('div');
+  d.className = 'banner' + (big ? ' big' : ''); d.textContent = text;
+  document.body.append(d); setTimeout(() => d.remove(), 2000);
+}
+function renderStreak() {
+  const el = $('#streak');
+  el.textContent = streak >= 2 ? `🔥 ${streak}` : '';
+  el.classList.toggle('hot', streak >= 5);
+}
 const BUDDIES = ['🦊', '🐼', '🐨', '🐯', '🐵', '🦄', '🐸', '🐙'];
 const PRAISE = ['Great job!', 'You got it!', 'Awesome!', 'Super star!', 'Way to go!', 'Yes! Nice work!', 'Wow, you are smart!'];
 const RETRY = ['Try again!', 'Almost! Try another one.', 'Oops! You can do it.', 'Not quite. Try again!'];
@@ -480,7 +533,7 @@ const RETRY = ['Try again!', 'Almost! Try another one.', 'Oops! You can do it.',
 function startQuiz(sub) {
   subject = sub; correct = 0;
   $('#buddy').textContent = pick(BUDDIES);
-  show('quiz'); renderStars(); nextQuestion();
+  show('quiz'); renderStars(); renderStreak(); nextQuestion();
 }
 function renderStars(pop) {
   const el = $('#stars'); el.innerHTML = '';
@@ -494,7 +547,7 @@ function renderStars(pop) {
 }
 function nextQuestion() {
   let n = 0;
-  do { q = Questions.generate(subject, { mathLevel: S.mathLevel }); } while (q.key === lastKey && n++ < 10);
+  do { q = Questions.generate(subject, { mathLevel: levelFor('math'), phonicsLevel: levelFor('phonics') }); } while (q.key === lastKey && n++ < 10);
   lastKey = q.key; locked = false; misses = 0;
   $('#visual').innerHTML = q.visual;
   $('#prompt').textContent = q.text;
@@ -525,17 +578,35 @@ function answer(btn, val) {
     correct++; renderStars(true);
     setBank(getBank() + S.secsPerAnswer);
     floatText(btn, `+${fmt(S.secsPerAnswer)} 📺`);
-    say(pick(PRAISE));
-    setTimeout(() => correct >= S.goal ? finishRound() : nextQuestion(), 1400);
+    // Streaks only count answers that were right the first time.
+    streak = misses ? 0 : streak + 1; renderStreak();
+    const cheer = !misses && STREAK_CHEERS[streak];
+    const newLevel = recordAnswer(q.subject, !misses);
+    let delay = 1400;
+    if (newLevel) {
+      const up = newLevel === LEVELS[q.subject][1];
+      setTimeout(() => {
+        banner(up ? `⬆️ Level up! ${LEVEL_NAMES[q.subject][newLevel]}` : `${LEVEL_NAMES[q.subject][newLevel]}`, true);
+        if (up) { sfx.levelUp(); confetti(25); say(`Level up! Now ${LEVEL_NAMES[q.subject][newLevel]}!`); }
+      }, 700);
+      delay = 3200;
+    } else if (cheer) {
+      banner(cheer[0], streak >= 5); sfx.streak(); say(cheer[1]);
+      if (streak >= 5) confetti(20);
+      delay = 2200;
+    } else say(pick(PRAISE));
+    setTimeout(() => correct >= S.goal ? finishRound() : nextQuestion(), delay);
   } else {
     btn.classList.add('wrong'); btn.disabled = true; misses++;
     sfx.wrong(); buddy('oops');
+    streak = 0; renderStreak();
     // After two misses (or one, when only two choices), show the answer and move on so nobody gets stuck.
     if (misses >= Math.min(2, q.choices.length - 1)) {
       locked = true;
       const right = [...document.querySelectorAll('.ans')].find(b => b.textContent === String(q.answer));
       right.classList.add('right');
       say(`The answer is ${q.answer}. Let's try another one!`);
+      recordAnswer(q.subject, false);
       setTimeout(nextQuestion, 2200);
     } else say(pick(RETRY));
   }
@@ -828,6 +899,12 @@ function renderParent() {
     if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = String(S[k]);
   });
   $('#apiKey').value = S.apiKey;
+  const L = getLevels(), auto = S.mathLevel === 'auto' || S.phonicsLevel === 'auto';
+  $('#levelInfo').innerHTML = auto
+    ? `Right now: <b>${LEVEL_NAMES.math[levelFor('math')]}</b> · <b>${LEVEL_NAMES.phonics[levelFor('phonics')]}</b>. `
+      + `Moves up after 7 of 8 right on the first try, and back down after 4 misses in 8. <button class="pbtn ghost" id="resetLevels" style="margin:0;padding:6px 12px;font-size:15px">Start over</button>`
+    : '';
+  const rl = $('#resetLevels'); if (rl) rl.onclick = () => { store.set('ss.levels', {}); renderParent(); };
   const goalSecs = S.goal * S.secsPerAnswer;
   $('#timeSummary').textContent = `A full round of ${S.goal} questions earns ${fmt(goalSecs)} of video. Earned time that isn't used is saved for next time.`
     + (S.breakMinutes ? ` Every ${S.breakMinutes} minute${S.breakMinutes > 1 ? 's' : ''} of watching, the video pauses for another round of ${S.goal} questions.` : '');
