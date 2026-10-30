@@ -33,10 +33,11 @@ for (const [right, wrongs] of Object.entries(data.SPELLING)) if (wrongs.includes
 
 // ---- Generate and check ----
 // Hand-written lessons: every item has one answer plus three different wrong ones, and covers every grade/level.
-const bodyJobs = Object.values(Lessons.BODY_PARTS).flatMap(p => p[1]);
+const bodyJobs = Object.values(Lessons.BODY_PARTS).flat().map(j => j[0]);
 if (new Set(bodyJobs).size !== bodyJobs.length) errors.push('BODY_PARTS: a job is listed under two parts');
 const forceActs = Object.values(Lessons.FORCES).flat().map(x => x[0]);
 if (new Set(forceActs).size !== forceActs.length) errors.push('FORCES: an action is both a push and a pull');
+if (forceActs.some(a => /\b(push|pull)/i.test(a))) errors.push('FORCES: an action gives away the answer');
 if (Lessons.NEEDS.wants.some(w => Lessons.NEEDS.animals.includes(w) || Lessons.NEEDS.plants.includes(w))) errors.push('NEEDS: a want is also a need');
 for (const [name, list] of [['PASSAGES', Lessons.PASSAGES], ['FACTS', Lessons.FACTS]]) {
   for (const it of list) {
@@ -164,7 +165,8 @@ for (let i = 0; i < N; i++) {
         if (q.text.includes('FIRST') && q.idx !== 0) fail(q, 'Life cycle FIRST wrong');
         if (!q.say.includes(`life of a ${q.name}`)) fail(q, 'Spoken life-cycle question does not name the creature'); break; }
       case 'plantpart': if (!Lessons.PLANT_PARTS[answer].includes(q.job)) fail(q, 'Plant part wrong'); break;
-      case 'bodypart': if (!Lessons.BODY_PARTS[answer] || !Lessons.BODY_PARTS[answer][1].includes(q.job)) fail(q, 'Body part wrong'); break;
+      case 'bodypart': { const j = (Lessons.BODY_PARTS[answer] || []).find(x => x[0] === q.job);
+        if (!j || !q.visual.includes(j[1])) fail(q, 'Body part wrong or picture mismatch'); break; }
       case 'needs': if (!Lessons.NEEDS[q.who].includes(answer) || choices.some(c => c !== answer && !Lessons.NEEDS.wants.includes(c))) fail(q, 'Needs wrong'); break;
       case 'push': if (!Lessons.FORCES[answer].some(x => x[0] === q.act)) fail(q, 'Push/pull wrong'); break;
       case 'moon': if (!q.visual.includes(Lessons.MOON[answer])) fail(q, 'Moon phase wrong'); break;

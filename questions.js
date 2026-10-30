@@ -645,7 +645,7 @@
       return { key: `plant${job}`, visual: picHtml('🌻', 'plant'), text: `Which part of a plant ${job}?`, say: `Which part of a plant ${job}?`, choices: wordChoices(ans, Object.keys(Lessons.PLANT_PARTS)), answer: ans, choiceClass: 'word', job };
     },
     bodypart() {
-      const ans = pick(Object.keys(Lessons.BODY_PARTS)), [emoji, jobs] = Lessons.BODY_PARTS[ans], job = pick(jobs);
+      const ans = pick(Object.keys(Lessons.BODY_PARTS)), [job, emoji] = pick(Lessons.BODY_PARTS[ans]);
       const ask = `What body part ${job}?`;
       return { key: `body${job}`, visual: `<div class="pic">${emoji}</div>`, text: ask, say: ask,
         choices: wordChoices(ans, Object.keys(Lessons.BODY_PARTS)), answer: ans, choiceClass: 'word', job };
@@ -668,7 +668,7 @@
     },
     fact(grade, level) {
       const item = pick(Lessons.FACTS.filter(x => x.g === grade && x.l === level));
-      return { key: `fact${item.q.slice(0, 24)}`, visual: `<div class="pic">🔬</div>`, text: item.q, say: item.q,
+      return { key: `fact${Lessons.FACTS.indexOf(item)}`, visual: `<div class="pic">🔬</div>`, text: item.q, say: item.q,
         choices: shuffle([item.a, ...item.wrong]), answer: item.a, choiceClass: 'word', item };
     },
   };
