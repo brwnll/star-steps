@@ -320,6 +320,9 @@
             <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
             <option>7</option><option>8</option><option>10</option><option>12</option><option>15</option><option>20</option></select></label>
         <label class="field">Read questions out loud <input type="checkbox" data-k="readAloud"></label>
+        <label class="field">Voice <span><select id="voiceSel"></select> <button class="pbtn ghost" id="voiceTry" style="margin:0;padding:8px 12px">🔊 Try it</button></span></label>
+        <p class="help"><span id="voiceNow"></span> For a much nicer voice on iPad: Settings → Accessibility → Spoken Content → Voices → English → pick
+          a voice like <b>Ava</b> or <b>Samantha</b> and download the <b>Enhanced</b> or <b>Premium</b> version. It then shows up here with a ★.</p>
       </div>
 
       <div class="panel">
@@ -403,7 +406,7 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
 const DEFAULTS = { apiKey: '', channels: [], videos: [], math: true, phonics: true, grade: 1, mathLevel: 'auto', phonicsLevel: 'auto', goal: 5,
-  secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, kidsOnly: false };
+  secsPerAnswer: 60, dailyMinutes: 30, breakMinutes: 0, readAloud: true, voice: '', kidsOnly: false };
 const S = Object.assign({}, DEFAULTS, store.get('ss.settings', {}));
 if (S.mathLevel == 10) S.mathLevel = '1'; else if (S.mathLevel == 20) S.mathLevel = '2';
 const save = () => store.set('ss.settings', S);
@@ -453,18 +456,30 @@ const sfx = {
   tap: () => tones([880], 0.05),
 };
 
+// Voices: the iPad's own. Higher-quality ones (Enhanced/Premium, downloaded in Settings) rank first,
+// then the natural-sounding built-ins. Parents can pick a specific voice in Grown-ups.
 let voice;
+const voiceScore = v => (/premium/i.test(v.name) ? 40 : 0) + (/enhanced/i.test(v.name) ? 30 : 0)
+  + (/Samantha|Ava|Allison|Zoe|Nicky|Joelle/i.test(v.name) ? 20 : 0) + (/Karen|Moira|Tessa|Daniel|Google US/i.test(v.name) ? 10 : 0)
+  + (/^en[-_]US/i.test(v.lang) ? 5 : 0) + (v.localService ? 1 : 0) - (/compact|Fred|Albert|Bad News|Bells|Zarvox|Trinoids|Whisper|Cellos|Organ|Bubbles|Boing|Deranged|Hysterical|Junior|Ralph|Kathy|Jester|Rocko|Shelley|Grandma|Grandpa|Eddy|Flo|Reed|Sandy|Wobble|Good News|Superstar/i.test(v.name) ? 50 : 0);
+const englishVoices = () => speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang)).sort((a, b) => voiceScore(b) - voiceScore(a));
 function loadVoice() {
-  const vs = speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang));
-  voice = vs.find(v => /Samantha|Karen|Moira|Tessa|Google US/i.test(v.name)) || vs[0];
+  const vs = englishVoices();
+  voice = (S.voice && vs.find(v => v.name === S.voice)) || vs[0];
 }
-if ('speechSynthesis' in window) { loadVoice(); speechSynthesis.onvoiceschanged = loadVoice; }
-function say(text) {
-  if (!S.readAloud || !('speechSynthesis' in window) || !text) return;
+if ('speechSynthesis' in window) { loadVoice(); speechSynthesis.onvoiceschanged = () => { loadVoice(); if ($('#voiceSel')) fillVoices(); }; }
+function say(text, force) {
+  if ((!S.readAloud && !force) || !('speechSynthesis' in window) || !text) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.rate = 0.85; u.pitch = 1.15; if (voice) u.voice = voice;
+  u.rate = 0.9; u.pitch = 1.0; if (voice) { u.voice = voice; u.lang = voice.lang; }
   speechSynthesis.speak(u);
+}
+function fillVoices() {
+  const sel = $('#voiceSel'), vs = englishVoices();
+  sel.innerHTML = '<option value="">Best available</option>' + vs.map(v => `<option value="${esc(v.name)}">${esc(v.name.replace(/\s*\(.*?\)\s*$/, ''))}${/premium|enhanced/i.test(v.name) ? ' ★' : ''} (${esc(v.lang)})</option>`).join('');
+  sel.value = S.voice && vs.some(v => v.name === S.voice) ? S.voice : '';
+  $('#voiceNow').textContent = voice ? `Using: ${voice.name}` : 'No voices found on this device.';
 }
 
 function confetti(n = 40) {
@@ -926,6 +941,7 @@ function renderParent() {
     if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = String(S[k]);
   });
   $('#apiKey').value = S.apiKey;
+  if ('speechSynthesis' in window) fillVoices();
   const L = getLevels(), auto = S.mathLevel === 'auto' || S.phonicsLevel === 'auto';
   for (const sub of ['math', 'phonics']) document.querySelectorAll(`[data-k=${sub}Level] option`).forEach(o => { if (o.value !== 'auto') o.textContent = levelName(sub, +o.value); });
   $('#gradeInfo').textContent = GRADE_INFO[S.grade];
@@ -1021,6 +1037,8 @@ document.querySelectorAll('[data-k]').forEach(el => el.onchange = () => {
   save(); renderParent();
 });
 $('#apiKey').onchange = () => { S.apiKey = $('#apiKey').value.trim(); save(); };
+$('#voiceSel').onchange = () => { S.voice = $('#voiceSel').value; save(); loadVoice(); fillVoices(); say('Hi! What is 2 plus 3? Great job!', true); };
+$('#voiceTry').onclick = () => say(`Hi! Let's play Star Steps. What is 2 plus 3? Great job, you got it!`, true);
 $('#chList').onclick = e => { const i = e.target.dataset.ch; if (i != null) { S.channels.splice(+i, 1); save(); renderParent(); } };
 $('#vidList').onclick = e => { const i = e.target.dataset.vid; if (i != null) { S.videos.splice(+i, 1); save(); renderParent(); } };
 const status = (el, msg, err) => { el.textContent = msg; el.classList.toggle('err', !!err); };
