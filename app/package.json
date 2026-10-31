@@ -1,0 +1,16 @@
+{
+  "name": "star-steps-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "iOS shell for Star Steps. The app loads the live site, so web pushes update it.",
+  "scripts": {
+    "sync": "cap sync ios",
+    "open": "cap open ios",
+    "assets": "capacitor-assets generate --ios --iconBackgroundColor '#8fd3ff' --splashBackgroundColor '#8fd3ff' --splashBackgroundColorDark '#8fd3ff'"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0"
+  }
+}

@@ -1532,7 +1532,9 @@ refreshChannels(false).then(renderHome);
 
 // ---------- Install as an app ----------
 // Android/Chrome offers a real install prompt; iPad/iPhone can only be added from Safari's Share menu, so we show the steps.
-const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+// Inside the App Store build (a Capacitor shell that loads this site) the page is already "installed".
+const inNativeApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const standalone = inNativeApp || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 let installPrompt = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; showInstallCard(); renderInstallPanel(); });
 const ua = navigator.userAgent;
@@ -1568,6 +1570,7 @@ function showInstallCard() {
 // Grown-ups screen: always there, so the icon can be added later even after the home card was dismissed.
 function renderInstallPanel() {
   const panel = $('#installPanel'), how = $('#installPanelHow');
+  if (inNativeApp) { panel.classList.add('hidden'); return; } // it came from the App Store
   if (standalone || store.get('ss.installed', false)) { panel.classList.remove('hidden'); how.textContent = 'Star Steps is on the Home Screen. 🎉'; $('#installPanelGo').classList.add('hidden'); return; }
   if (!installPrompt && !installSteps().length) { panel.classList.add('hidden'); return; } // desktop
   panel.classList.remove('hidden');

@@ -1,0 +1,16 @@
+{
+  "appId": "com.brwnll.starsteps",
+  "appName": "Star Steps",
+  "webDir": "www",
+  "server": {
+    "url": "https://brwnll.github.io/star-steps/",
+    "errorPath": "offline.html",
+    "allowNavigation": ["brwnll.github.io"]
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#8fd3ff",
+    "allowsLinkPreview": false,
+    "scrollEnabled": false
+  }
+}

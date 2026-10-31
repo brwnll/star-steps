@@ -2,3 +2,10 @@
 .DS_Store
 node_modules/
 .wrangler/
+app/node_modules/
+app/ios/App/App/public/
+app/ios/App/App/capacitor.config.json
+app/ios/App/App/config.xml
+app/ios/DerivedData/
+app/ios/App/build/
+xcuserdata/
