@@ -507,9 +507,10 @@
         <ul class="plist" id="vidList"></ul>
         <p class="help" id="vidEmpty">No single videos yet. Search above to add some.</p>
         <details class="more">
-          <summary>Paste video links instead</summary>
-          <p class="help">In the YouTube app tap Share → Copy Link, then paste here. One link per line.</p>
-          <textarea class="pinput" id="vidInput" placeholder="https://www.youtube.com/watch?v=…" autocapitalize="off"></textarea>
+          <summary>Paste YouTube or Vimeo links</summary>
+          <p class="help">In the YouTube or Vimeo app tap Share → Copy Link, then paste here. One link per line.
+            Vimeo videos have no ads at all.</p>
+          <textarea class="pinput" id="vidInput" placeholder="https://www.youtube.com/watch?v=…&#10;https://vimeo.com/…" autocapitalize="off"></textarea>
           <button class="pbtn" id="vidAdd">Add videos</button>
         </details>
         <div class="status" id="vidStatus"></div>
@@ -1010,7 +1011,7 @@ function pickFour() {
   for (const v of ordered) if (picks.length < 4 && !picks.includes(v)) picks.push(v);
   return picks;
 }
-const thumb = id => `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+const thumb = v => v.thumb || `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`;
 
 function showReward(msg) {
   show('reward');
@@ -1046,7 +1047,7 @@ function showReward(msg) {
   vids.forEach(v => {
     const b = document.createElement('button');
     b.className = 'vid chunky';
-    b.innerHTML = `<img src="${thumb(v.id)}" alt="">${v.isResume ? '<em class="resume">▶ Keep watching</em>' : ''}<span>${esc(v.title)}</span>`;
+    b.innerHTML = `<img src="${thumb(v)}" alt="">${v.isResume ? '<em class="resume">▶ Keep watching</em>' : ''}<span>${esc(v.title)}</span>`;
     b.onclick = () => { sfx.tap(); playVideo(v, v.isResume ? v.time : 0); };
     box.append(b);
   });
@@ -1062,6 +1063,47 @@ function loadYT() {
   });
   return ytReady;
 }
+let vimeoReady;
+function loadVimeo() {
+  if (!vimeoReady) vimeoReady = new Promise((res, rej) => {
+    if (window.Vimeo && Vimeo.Player) return res();
+    const s = document.createElement('script'); s.src = 'https://player.vimeo.com/api/player.js';
+    s.onload = res; s.onerror = rej; document.head.append(s);
+  });
+  return vimeoReady;
+}
+// Both players behind the same four calls: play(), pause(), playing(), time() (seconds, sync) and destroy().
+function ytAdapter(v, start) {
+  const yt = new YT.Player('yt', {
+    host: 'https://www.youtube-nocookie.com', videoId: v.id, width: '100%', height: '100%',
+    playerVars: { autoplay: 1, start: Math.floor(start), rel: 0, playsinline: 1, controls: 0, disablekb: 1,
+      fs: 0, iv_load_policy: 3, modestbranding: 1 },
+    events: { onReady: e => e.target.playVideo(), onStateChange: e => {
+      const P = YT.PlayerState;
+      onState(e.data === P.PLAYING ? 'playing' : e.data === P.PAUSED ? 'paused' : e.data === P.ENDED ? 'ended' : '');
+    }, onError: onPlayError },
+  });
+  return { play: () => yt.playVideo(), pause: () => yt.pauseVideo(), destroy: () => yt.destroy(),
+    playing: () => yt.getPlayerState && yt.getPlayerState() === YT.PlayerState.PLAYING,
+    time: () => (yt.getCurrentTime && yt.getCurrentTime()) || 0 };
+}
+function vimeoAdapter(v, start) {
+  let time = 0, playing = false;
+  const vp = new Vimeo.Player('yt', { id: +v.id, h: v.h || undefined, autoplay: true, playsinline: true, dnt: true,
+    controls: false, title: false, byline: false, portrait: false, keyboard: false, pip: false, width: 1280 });
+  if (start > 0) vp.setCurrentTime(start).catch(() => {});
+  vp.on('play', () => { playing = true; onState('playing'); });
+  vp.on('pause', () => { playing = false; onState('paused'); });
+  vp.on('ended', () => { playing = false; onState('ended'); });
+  vp.on('timeupdate', d => { time = d.seconds; });
+  // Vimeo reports a harmless PlaybackError on the first autoplay attempt and then plays anyway, so only
+  // real refusals count, plus a watchdog in case nothing ever starts.
+  vp.on('error', e => { if (/^(PrivacyError|NotFoundError|PasswordError|UnsupportedError)$/.test(e && e.name)) onPlayError(); });
+  vp.ready().then(() => vp.play().catch(() => {})).catch(onPlayError);
+  const watchdog = setTimeout(() => { if (!playing && !everPlayed) onPlayError(); }, 15000);
+  return { play: () => vp.play(), pause: () => vp.pause(), destroy: () => { clearTimeout(watchdog); vp.destroy(); },
+    playing: () => playing, time: () => time };
+}
 
 // Seconds watched since the last round of questions; a question break comes when it reaches S.breakMinutes.
 let sitting = 0;
@@ -1075,24 +1117,21 @@ async function playVideo(v, start = 0) {
   show('watch'); updateTimer();
   $('#shield').className = 'shield';
   $('#ytHolder').innerHTML = '<div id="yt"></div>';
-  await loadYT();
-  player = new YT.Player('yt', {
-    host: 'https://www.youtube-nocookie.com', videoId: v.id, width: '100%', height: '100%',
-    playerVars: { autoplay: 1, start: Math.floor(start), rel: 0, playsinline: 1, controls: 0, disablekb: 1,
-      fs: 0, iv_load_policy: 3, modestbranding: 1 },
-    events: { onReady: e => e.target.playVideo(), onStateChange: onState, onError: onYTError },
-  });
+  try {
+    if (v.src === 'vimeo') { await loadVimeo(); player = vimeoAdapter(v, start); }
+    else { await loadYT(); player = ytAdapter(v, start); }
+  } catch { onPlayError(); }
 }
-function onState(e) {
-  const P = YT.PlayerState, shield = $('#shield');
-  if (e.data === P.PLAYING) {
+function onState(state) {
+  const shield = $('#shield');
+  if (state === 'playing') {
     if (!everPlayed) { everPlayed = true; const r = store.get('ss.recent', []); store.set('ss.recent', [current.id, ...r.filter(x => x !== current.id)].slice(0, 30)); }
     shield.className = 'shield on';
     clearInterval(tick); tick = setInterval(countDown, 1000);
-  } else if (e.data === P.PAUSED) {
+  } else if (state === 'paused') {
     clearInterval(tick);
     if (everPlayed) shield.className = 'shield on paused';
-  } else if (e.data === P.ENDED) {
+  } else if (state === 'ended') {
     clearInterval(tick); stopPlayer();
     if (watchLeft() > 0) showReward('That was fun! 🍿'); else timesUp(false);
   }
@@ -1108,8 +1147,8 @@ function updateTimer() {
 }
 function timesUp(midVideo) {
   clearInterval(tick);
-  if (midVideo && player && player.getCurrentTime) {
-    store.set('ss.resume', { id: current.id, title: current.title, time: Math.max(0, player.getCurrentTime() - 2) });
+  if (midVideo && player) {
+    store.set('ss.resume', { ...current, isResume: undefined, time: Math.max(0, player.time() - 2) });
   }
   stopPlayer(); show('reward');
   $('#videoChoices').innerHTML = '';
@@ -1132,18 +1171,19 @@ function stopPlayer() {
   try { player && player.destroy(); } catch {}
   player = null; $('#ytHolder').innerHTML = '';
 }
-function onYTError() {
+function onPlayError() {
+  if (!current) return;
   const b = store.get('ss.blocked', []);
   store.set('ss.blocked', [...b, current.id]);
   stopPlayer(); showReward("Oops! That one won't play 🙈");
 }
 $('#shield').onclick = () => {
-  if (!player || !player.getPlayerState) return;
-  if (player.getPlayerState() === YT.PlayerState.PLAYING) player.pauseVideo(); else player.playVideo();
+  if (!player) return;
+  if (player.playing()) player.pause(); else player.play();
 };
 $('#doneWatch').onclick = () => {
-  if (current && player && player.getCurrentTime && player.getCurrentTime() > 5) {
-    store.set('ss.resume', { id: current.id, title: current.title, time: player.getCurrentTime() - 2 });
+  if (current && player && player.time() > 5) {
+    store.set('ss.resume', { ...current, isResume: undefined, time: player.time() - 2 });
   }
   stopPlayer(); show('home');
 };
@@ -1232,6 +1272,22 @@ function parseVideoId(s) {
   const m = s.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/);
   if (m) return m[1];
   return /^[\w-]{11}$/.test(s) ? s : null;
+}
+// Vimeo links: vimeo.com/123, vimeo.com/123/abcdef (unlisted, the hash is needed to play), player.vimeo.com/video/123
+function parseVimeo(s) {
+  const m = s.trim().match(/vimeo\.com\/(?:video\/)?(\d{5,})(?:\/([a-f0-9]{6,}))?/i);
+  return m ? { id: m[1], h: m[2] || '' } : null;
+}
+async function vimeoInfo({ id, h }) {
+  const url = 'https://vimeo.com/' + id + (h ? '/' + h : '');
+  try {
+    const r = await fetch('https://vimeo.com/api/oembed.json?url=' + encodeURIComponent(url));
+    if (r.ok) {
+      const j = await r.json();
+      return { id, src: 'vimeo', h, title: j.title, channel: j.author_name, thumb: j.thumbnail_url, secs: j.duration };
+    }
+  } catch {}
+  return { id, src: 'vimeo', h, title: 'Vimeo video' };
 }
 async function videoInfo(id) {
   if (canLookUp()) {
@@ -1377,8 +1433,8 @@ function renderParent() {
   $('#chList').innerHTML = S.channels.map((c, i) => `<li>${c.thumb ? `<img class="round" src="${esc(c.thumb)}" alt="">` : ''}
     <div class="grow">${esc(c.title)}<small>${(c.videos || []).length} videos${c.error ? ' · ⚠️ ' + esc(c.error) : ''}</small></div>
     <button class="x" data-ch="${i}">Remove</button></li>`).join('');
-  $('#vidList').innerHTML = S.videos.map((v, i) => `<li><img src="${thumb(v.id)}" alt="">
-    <div class="grow">${esc(v.title)}<small>${esc(v.channel || '')}</small></div>
+  $('#vidList').innerHTML = S.videos.map((v, i) => `<li><img src="${thumb(v)}" alt="">
+    <div class="grow">${esc(v.title)}<small>${v.src === 'vimeo' ? 'Vimeo · ' : ''}${esc(v.channel || '')}</small></div>
     <button class="x" data-vid="${i}">Remove</button></li>`).join('');
   $('#chEmpty').classList.toggle('hidden', S.channels.length > 0);
   renderChores();
@@ -1395,7 +1451,7 @@ function renderResults() {
     box.innerHTML = results.map((v, i) => {
       const added = S.videos.some(x => x.id === v.id);
       return `<div class="rcard"><a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener" title="Preview on YouTube">
-          <img src="${thumb(v.id)}" alt="" loading="lazy"><b>${minsSecs(v.secs)}</b></a>
+          <img src="${thumb(v)}" alt="" loading="lazy"><b>${minsSecs(v.secs)}</b></a>
         <div class="rbody"><div class="rtitle">${esc(v.title)}</div>
           <small>${esc(v.channel || '')}${v.kids ? ' · 👶 Made for kids' : ''}</small>
           <button class="pbtn${added ? ' added' : ''}" data-add="${i}">${added ? '✓ Added' : '+ Add video'}</button></div></div>`;
@@ -1488,13 +1544,13 @@ $('#vidAdd').onclick = async () => {
   let added = 0, bad = 0;
   status(st, 'Adding…');
   for (const line of lines) {
-    const id = parseVideoId(line);
+    const vm = /vimeo\.com/i.test(line) ? parseVimeo(line) : null, id = vm ? vm.id : parseVideoId(line);
     if (!id) { bad++; continue; }
     if (S.videos.some(v => v.id === id)) continue;
-    S.videos.push(await videoInfo(id)); added++;
+    S.videos.push(vm ? await vimeoInfo(vm) : await videoInfo(id)); added++;
   }
   save(); $('#vidInput').value = ''; renderParent();
-  status(st, `Added ${added} video${added === 1 ? '' : 's'}.` + (bad ? ` ${bad} link${bad === 1 ? '' : 's'} didn't look like YouTube videos.` : ''), bad > 0);
+  status(st, `Added ${added} video${added === 1 ? '' : 's'}.` + (bad ? ` ${bad} link${bad === 1 ? '' : 's'} didn't look like YouTube or Vimeo videos.` : ''), bad > 0);
 };
 function renderChores() {
   const MINS = [1, 2, 3, 5, 10, 15];
