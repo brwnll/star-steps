@@ -605,8 +605,10 @@ const sfx = {
 // Voices: the iPad's own. Higher-quality ones (Enhanced/Premium, downloaded in Settings) rank first,
 // then the natural-sounding built-ins. Parents can pick a specific voice in Grown-ups.
 let voice;
-const voiceScore = v => (/premium/i.test(v.name) ? 40 : 0) + (/enhanced/i.test(v.name) ? 30 : 0)
-  + (/Samantha|Ava|Allison|Zoe|Nicky|Joelle/i.test(v.name) ? 20 : 0) + (/Karen|Moira|Tessa|Daniel|Google US/i.test(v.name) ? 10 : 0)
+// iOS names downloaded voices "Ava (Premium)" and also marks the quality in the URI (com.apple.voice.premium.en-US.Ava).
+const quality = v => /premium/i.test(v.name + ' ' + v.voiceURI) ? 'premium' : /enhanced/i.test(v.name + ' ' + v.voiceURI) ? 'enhanced' : '';
+const voiceScore = v => (quality(v) === 'premium' ? 40 : quality(v) === 'enhanced' ? 30 : 0)
+  + (/Samantha|Ava|Allison|Zoe|Nicky|Joelle|Evan|Nathan|Noelle|Aaron/i.test(v.name) ? 20 : 0) + (/Karen|Moira|Tessa|Daniel|Google US/i.test(v.name) ? 10 : 0)
   + (/^en[-_]US/i.test(v.lang) ? 5 : 0) + (v.localService ? 1 : 0) - (/compact|Fred|Albert|Bad News|Bells|Zarvox|Trinoids|Whisper|Cellos|Organ|Bubbles|Boing|Deranged|Hysterical|Junior|Ralph|Kathy|Jester|Rocko|Shelley|Grandma|Grandpa|Eddy|Flo|Reed|Sandy|Wobble|Good News|Superstar/i.test(v.name) ? 50 : 0);
 const englishVoices = () => speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang)).sort((a, b) => voiceScore(b) - voiceScore(a));
 function loadVoice() {
@@ -623,7 +625,7 @@ function say(text, force) {
 }
 function fillVoices() {
   const sel = $('#voiceSel'), vs = englishVoices();
-  sel.innerHTML = '<option value="">Best available</option>' + vs.map(v => `<option value="${esc(v.name)}">${esc(v.name.replace(/\s*\(.*?\)\s*$/, ''))}${/premium|enhanced/i.test(v.name) ? ' ★' : ''} (${esc(v.lang)})</option>`).join('');
+  sel.innerHTML = '<option value="">Best available</option>' + vs.map(v => `<option value="${esc(v.name)}">${esc(v.name.replace(/\s*\(.*?\)\s*$/, ''))}${quality(v) ? ' ★' : ''} (${esc(v.lang)})</option>`).join('');
   sel.value = S.voice && vs.some(v => v.name === S.voice) ? S.voice : '';
   $('#voiceNow').textContent = voice ? `Using: ${voice.name}` : 'No voices found on this device.';
 }
