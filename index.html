@@ -435,7 +435,8 @@
         <label class="field">Read questions out loud <input type="checkbox" data-k="readAloud"></label>
         <label class="field">Voice <span><select id="voiceSel"></select> <button class="pbtn ghost" id="voiceTry" style="margin:0;padding:8px 12px">🔊 Try it</button></span></label>
         <p class="help"><span id="voiceNow"></span> For a much nicer voice on iPad: Settings → Accessibility → Spoken Content → Voices → English → pick
-          a voice like <b>Ava</b> or <b>Samantha</b> and download the <b>Enhanced</b> or <b>Premium</b> version. It then shows up here with a ★.</p>
+          a voice like <b>Ava</b> or <b>Samantha</b> and download the <b>Enhanced</b> or <b>Premium</b> version. Then fully close Star Steps
+          and open it again: it shows up here with a ★ and is used automatically.</p>
       </div>
 
       <div class="panel">
@@ -613,7 +614,7 @@ const voiceScore = v => (quality(v) === 'premium' ? 40 : quality(v) === 'enhance
 const englishVoices = () => speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang)).sort((a, b) => voiceScore(b) - voiceScore(a));
 function loadVoice() {
   const vs = englishVoices();
-  voice = (S.voice && vs.find(v => v.name === S.voice)) || vs[0];
+  voice = (S.voice && (vs.find(v => v.voiceURI === S.voice) || vs.find(v => v.name === S.voice))) || vs[0];
 }
 if ('speechSynthesis' in window) { loadVoice(); speechSynthesis.onvoiceschanged = () => { loadVoice(); if ($('#voiceSel')) fillVoices(); }; }
 function say(text, force) {
@@ -625,9 +626,13 @@ function say(text, force) {
 }
 function fillVoices() {
   const sel = $('#voiceSel'), vs = englishVoices();
-  sel.innerHTML = '<option value="">Best available</option>' + vs.map(v => `<option value="${esc(v.name)}">${esc(v.name.replace(/\s*\(.*?\)\s*$/, ''))}${quality(v) ? ' ★' : ''} (${esc(v.lang)})</option>`).join('');
-  sel.value = S.voice && vs.some(v => v.name === S.voice) ? S.voice : '';
-  $('#voiceNow').textContent = voice ? `Using: ${voice.name}` : 'No voices found on this device.';
+  const label = v => { const q = quality(v); const base = v.name.replace(/\s*\((premium|enhanced|compact)\)\s*$/i, ''); return base + (q ? ` (${q[0].toUpperCase() + q.slice(1)}) ★` : '') + ` · ${v.lang}`; };
+  sel.innerHTML = '<option value="">Best available</option>' + vs.map(v => `<option value="${esc(v.voiceURI)}">${esc(label(v))}</option>`).join('');
+  sel.value = S.voice && vs.some(v => v.voiceURI === S.voice) ? S.voice : (S.voice && vs.find(v => v.name === S.voice) || { voiceURI: '' }).voiceURI;
+  const better = vs.filter(quality).length;
+  $('#voiceNow').textContent = (voice ? `Using: ${label(voice)}.` : 'No voices found on this device.')
+    + ` ${vs.length} English voice${vs.length === 1 ? '' : 's'} found, ${better} Enhanced/Premium.`
+    + (better ? '' : ' Just downloaded one? Fully close Star Steps (swipe it away in the app switcher) and open it again.');
 }
 
 function confetti(n = 40) {
